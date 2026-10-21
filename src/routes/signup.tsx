@@ -15,6 +15,8 @@ export const Route = createFileRoute("/signup")({
       { name: "description", content: "Créez votre compte Nabd et configurez votre salle de sport." },
       { property: "og:title", content: "Créer un compte — Nabd" },
       { property: "og:description", content: "Créez votre compte Nabd et configurez votre salle de sport." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SignupPage,

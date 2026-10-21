@@ -22,6 +22,8 @@ export const Route = createFileRoute("/_espace/cash")({
       { name: "description", content: "Clôture de caisse quotidienne et historique des écarts." },
       { property: "og:title", content: "Caisse — Nabd" },
       { property: "og:description", content: "Clôture de caisse quotidienne et historique des écarts." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CashPage,

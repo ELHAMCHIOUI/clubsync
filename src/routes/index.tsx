@@ -10,6 +10,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Gérez l'accueil, les membres et la caisse de votre salle avec Nabd." },
       { property: "og:title", content: "Nabd — Gestion de salle de sport" },
       { property: "og:description", content: "Gérez l'accueil, les membres et la caisse de votre salle avec Nabd." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,

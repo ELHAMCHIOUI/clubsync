@@ -18,6 +18,8 @@ export const Route = createFileRoute("/_espace/members/")({
       { name: "description", content: "Liste des membres de la salle, abonnements et impayés." },
       { property: "og:title", content: "Membres — Nabd" },
       { property: "og:description", content: "Liste des membres de la salle, abonnements et impayés." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MembersPage,

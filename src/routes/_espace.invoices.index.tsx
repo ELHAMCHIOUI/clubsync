@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_espace/invoices/")({
       { name: "description", content: "Factures émises pour les abonnements de la salle." },
       { property: "og:title", content: "Factures — Nabd" },
       { property: "og:description", content: "Factures émises pour les abonnements de la salle." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: InvoicesPage,

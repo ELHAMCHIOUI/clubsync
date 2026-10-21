@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_espace/dashboard")({
       { name: "description", content: "Membres actifs, entrées, encaissements et impayés du jour." },
       { property: "og:title", content: "Tableau de bord — Nabd" },
       { property: "og:description", content: "Membres actifs, entrées, encaissements et impayés du jour." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,

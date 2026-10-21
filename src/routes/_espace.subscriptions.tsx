@@ -21,6 +21,8 @@ export const Route = createFileRoute("/_espace/subscriptions")({
       { name: "description", content: "Abonnements actifs, à venir, gelés et expirés de la salle." },
       { property: "og:title", content: "Abonnements — Nabd" },
       { property: "og:description", content: "Abonnements actifs, à venir, gelés et expirés de la salle." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SubscriptionsPage,

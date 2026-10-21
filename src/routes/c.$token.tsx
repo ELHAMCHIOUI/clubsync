@@ -11,11 +11,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/c/$token")({
   head: () => ({
     meta: [
-      { title: "Ma carte de membre" },
+      { title: "Ma carte de membre — Nabd" },
       { name: "description", content: "Votre carte de membre : présentez le QR à l'accueil." },
       { name: "robots", content: "noindex, nofollow" },
-      { property: "og:title", content: "Ma carte de membre" },
+      { property: "og:title", content: "Ma carte de membre — Nabd" },
       { property: "og:description", content: "Votre carte de membre : présentez le QR à l'accueil." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PublicCardPage,
