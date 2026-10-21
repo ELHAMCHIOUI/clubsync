@@ -23,6 +23,7 @@ import { Route as EspaceExpensesRouteImport } from './routes/_espace.expenses'
 import { Route as EspaceLoyaltyRouteImport } from './routes/_espace.loyalty'
 import { Route as EspacePaymentsRouteImport } from './routes/_espace.payments'
 import { Route as EspaceSubscriptionsRouteImport } from './routes/_espace.subscriptions'
+import { Route as EspaceThemeRouteImport } from './routes/_espace.theme'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as EspaceInvoicesIndexRouteImport } from './routes/_espace.invoices.index'
 import { Route as EspaceInvoicesIdRouteImport } from './routes/_espace.invoices.$id'
@@ -99,6 +100,11 @@ const EspaceSubscriptionsRoute = EspaceSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => EspaceRoute,
 } as any)
+const EspaceThemeRoute = EspaceThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
+  getParentRoute: () => EspaceRoute,
+} as any)
 const CTokenRoute = CTokenRouteImport.update({
   id: '/c/$token',
   path: '/c/$token',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/loyalty': typeof EspaceLoyaltyRoute
   '/payments': typeof EspacePaymentsRoute
   '/subscriptions': typeof EspaceSubscriptionsRoute
+  '/theme': typeof EspaceThemeRoute
   '/c/$token': typeof CTokenRoute
   '/invoices/$id': typeof EspaceInvoicesIdRoute
   '/members/$id': typeof EspaceMembersIdRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/loyalty': typeof EspaceLoyaltyRoute
   '/payments': typeof EspacePaymentsRoute
   '/subscriptions': typeof EspaceSubscriptionsRoute
+  '/theme': typeof EspaceThemeRoute
   '/c/$token': typeof CTokenRoute
   '/invoices/$id': typeof EspaceInvoicesIdRoute
   '/members/$id': typeof EspaceMembersIdRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/_espace/loyalty': typeof EspaceLoyaltyRoute
   '/_espace/payments': typeof EspacePaymentsRoute
   '/_espace/subscriptions': typeof EspaceSubscriptionsRoute
+  '/_espace/theme': typeof EspaceThemeRoute
   '/c/$token': typeof CTokenRoute
   '/_espace/invoices/$id': typeof EspaceInvoicesIdRoute
   '/_espace/members/$id': typeof EspaceMembersIdRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/loyalty'
     | '/payments'
     | '/subscriptions'
+    | '/theme'
     | '/c/$token'
     | '/invoices/$id'
     | '/members/$id'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/loyalty'
     | '/payments'
     | '/subscriptions'
+    | '/theme'
     | '/c/$token'
     | '/invoices/$id'
     | '/members/$id'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/_espace/loyalty'
     | '/_espace/payments'
     | '/_espace/subscriptions'
+    | '/_espace/theme'
     | '/c/$token'
     | '/_espace/invoices/$id'
     | '/_espace/members/$id'
@@ -371,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EspaceSubscriptionsRouteImport
       parentRoute: typeof EspaceRoute
     }
+    '/_espace/theme': {
+      id: '/_espace/theme'
+      path: '/theme'
+      fullPath: '/theme'
+      preLoaderRoute: typeof EspaceThemeRouteImport
+      parentRoute: typeof EspaceRoute
+    }
     '/c/$token': {
       id: '/c/$token'
       path: '/c/$token'
@@ -426,6 +445,7 @@ interface EspaceRouteChildren {
   EspaceLoyaltyRoute: typeof EspaceLoyaltyRoute
   EspacePaymentsRoute: typeof EspacePaymentsRoute
   EspaceSubscriptionsRoute: typeof EspaceSubscriptionsRoute
+  EspaceThemeRoute: typeof EspaceThemeRoute
   EspaceInvoicesIdRoute: typeof EspaceInvoicesIdRoute
   EspaceMembersIdRoute: typeof EspaceMembersIdRoute
   EspaceInvoicesIndexRoute: typeof EspaceInvoicesIndexRoute
@@ -443,6 +463,7 @@ const EspaceRouteChildren: EspaceRouteChildren = {
   EspaceLoyaltyRoute: EspaceLoyaltyRoute,
   EspacePaymentsRoute: EspacePaymentsRoute,
   EspaceSubscriptionsRoute: EspaceSubscriptionsRoute,
+  EspaceThemeRoute: EspaceThemeRoute,
   EspaceInvoicesIdRoute: EspaceInvoicesIdRoute,
   EspaceMembersIdRoute: EspaceMembersIdRoute,
   EspaceInvoicesIndexRoute: EspaceInvoicesIndexRoute,
