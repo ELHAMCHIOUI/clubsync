@@ -20,11 +20,12 @@ import { Route as EspaceCashRouteImport } from './routes/_espace.cash'
 import { Route as EspaceCheckinRouteImport } from './routes/_espace.checkin'
 import { Route as EspaceDashboardRouteImport } from './routes/_espace.dashboard'
 import { Route as EspaceExpensesRouteImport } from './routes/_espace.expenses'
-import { Route as EspaceInvoicesRouteImport } from './routes/_espace.invoices'
 import { Route as EspaceLoyaltyRouteImport } from './routes/_espace.loyalty'
 import { Route as EspacePaymentsRouteImport } from './routes/_espace.payments'
 import { Route as EspaceSubscriptionsRouteImport } from './routes/_espace.subscriptions'
 import { Route as CTokenRouteImport } from './routes/c.$token'
+import { Route as EspaceInvoicesIndexRouteImport } from './routes/_espace.invoices.index'
+import { Route as EspaceInvoicesIdRouteImport } from './routes/_espace.invoices.$id'
 import { Route as EspaceMembersIndexRouteImport } from './routes/_espace.members.index'
 import { Route as EspaceMembersIdRouteImport } from './routes/_espace.members.$id'
 import { Route as EspaceMembersIdCardRouteImport } from './routes/_espace.members.$id_.card'
@@ -83,11 +84,6 @@ const EspaceExpensesRoute = EspaceExpensesRouteImport.update({
   path: '/expenses',
   getParentRoute: () => EspaceRoute,
 } as any)
-const EspaceInvoicesRoute = EspaceInvoicesRouteImport.update({
-  id: '/invoices',
-  path: '/invoices',
-  getParentRoute: () => EspaceRoute,
-} as any)
 const EspaceLoyaltyRoute = EspaceLoyaltyRouteImport.update({
   id: '/loyalty',
   path: '/loyalty',
@@ -107,6 +103,16 @@ const CTokenRoute = CTokenRouteImport.update({
   id: '/c/$token',
   path: '/c/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const EspaceInvoicesIndexRoute = EspaceInvoicesIndexRouteImport.update({
+  id: '/invoices/',
+  path: '/invoices/',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceInvoicesIdRoute = EspaceInvoicesIdRouteImport.update({
+  id: '/invoices/$id',
+  path: '/invoices/$id',
+  getParentRoute: () => EspaceRoute,
 } as any)
 const EspaceMembersIndexRoute = EspaceMembersIndexRouteImport.update({
   id: '/members/',
@@ -135,12 +141,13 @@ export interface FileRoutesByFullPath {
   '/checkin': typeof EspaceCheckinRoute
   '/dashboard': typeof EspaceDashboardRoute
   '/expenses': typeof EspaceExpensesRoute
-  '/invoices': typeof EspaceInvoicesRoute
   '/loyalty': typeof EspaceLoyaltyRoute
   '/payments': typeof EspacePaymentsRoute
   '/subscriptions': typeof EspaceSubscriptionsRoute
   '/c/$token': typeof CTokenRoute
+  '/invoices/$id': typeof EspaceInvoicesIdRoute
   '/members/$id': typeof EspaceMembersIdRoute
+  '/invoices/': typeof EspaceInvoicesIndexRoute
   '/members/': typeof EspaceMembersIndexRoute
   '/members/$id/card': typeof EspaceMembersIdCardRoute
 }
@@ -155,12 +162,13 @@ export interface FileRoutesByTo {
   '/checkin': typeof EspaceCheckinRoute
   '/dashboard': typeof EspaceDashboardRoute
   '/expenses': typeof EspaceExpensesRoute
-  '/invoices': typeof EspaceInvoicesRoute
   '/loyalty': typeof EspaceLoyaltyRoute
   '/payments': typeof EspacePaymentsRoute
   '/subscriptions': typeof EspaceSubscriptionsRoute
   '/c/$token': typeof CTokenRoute
+  '/invoices/$id': typeof EspaceInvoicesIdRoute
   '/members/$id': typeof EspaceMembersIdRoute
+  '/invoices': typeof EspaceInvoicesIndexRoute
   '/members': typeof EspaceMembersIndexRoute
   '/members/$id/card': typeof EspaceMembersIdCardRoute
 }
@@ -177,12 +185,13 @@ export interface FileRoutesById {
   '/_espace/checkin': typeof EspaceCheckinRoute
   '/_espace/dashboard': typeof EspaceDashboardRoute
   '/_espace/expenses': typeof EspaceExpensesRoute
-  '/_espace/invoices': typeof EspaceInvoicesRoute
   '/_espace/loyalty': typeof EspaceLoyaltyRoute
   '/_espace/payments': typeof EspacePaymentsRoute
   '/_espace/subscriptions': typeof EspaceSubscriptionsRoute
   '/c/$token': typeof CTokenRoute
+  '/_espace/invoices/$id': typeof EspaceInvoicesIdRoute
   '/_espace/members/$id': typeof EspaceMembersIdRoute
+  '/_espace/invoices/': typeof EspaceInvoicesIndexRoute
   '/_espace/members/': typeof EspaceMembersIndexRoute
   '/_espace/members/$id_/card': typeof EspaceMembersIdCardRoute
 }
@@ -199,12 +208,13 @@ export interface FileRouteTypes {
     | '/checkin'
     | '/dashboard'
     | '/expenses'
-    | '/invoices'
     | '/loyalty'
     | '/payments'
     | '/subscriptions'
     | '/c/$token'
+    | '/invoices/$id'
     | '/members/$id'
+    | '/invoices/'
     | '/members/'
     | '/members/$id/card'
   fileRoutesByTo: FileRoutesByTo
@@ -219,12 +229,13 @@ export interface FileRouteTypes {
     | '/checkin'
     | '/dashboard'
     | '/expenses'
-    | '/invoices'
     | '/loyalty'
     | '/payments'
     | '/subscriptions'
     | '/c/$token'
+    | '/invoices/$id'
     | '/members/$id'
+    | '/invoices'
     | '/members'
     | '/members/$id/card'
   id:
@@ -240,12 +251,13 @@ export interface FileRouteTypes {
     | '/_espace/checkin'
     | '/_espace/dashboard'
     | '/_espace/expenses'
-    | '/_espace/invoices'
     | '/_espace/loyalty'
     | '/_espace/payments'
     | '/_espace/subscriptions'
     | '/c/$token'
+    | '/_espace/invoices/$id'
     | '/_espace/members/$id'
+    | '/_espace/invoices/'
     | '/_espace/members/'
     | '/_espace/members/$id_/card'
   fileRoutesById: FileRoutesById
@@ -338,13 +350,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EspaceExpensesRouteImport
       parentRoute: typeof EspaceRoute
     }
-    '/_espace/invoices': {
-      id: '/_espace/invoices'
-      path: '/invoices'
-      fullPath: '/invoices'
-      preLoaderRoute: typeof EspaceInvoicesRouteImport
-      parentRoute: typeof EspaceRoute
-    }
     '/_espace/loyalty': {
       id: '/_espace/loyalty'
       path: '/loyalty'
@@ -372,6 +377,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/c/$token'
       preLoaderRoute: typeof CTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_espace/invoices/': {
+      id: '/_espace/invoices/'
+      path: '/invoices'
+      fullPath: '/invoices/'
+      preLoaderRoute: typeof EspaceInvoicesIndexRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/invoices/$id': {
+      id: '/_espace/invoices/$id'
+      path: '/invoices/$id'
+      fullPath: '/invoices/$id'
+      preLoaderRoute: typeof EspaceInvoicesIdRouteImport
+      parentRoute: typeof EspaceRoute
     }
     '/_espace/members/': {
       id: '/_espace/members/'
@@ -404,11 +423,12 @@ interface EspaceRouteChildren {
   EspaceCheckinRoute: typeof EspaceCheckinRoute
   EspaceDashboardRoute: typeof EspaceDashboardRoute
   EspaceExpensesRoute: typeof EspaceExpensesRoute
-  EspaceInvoicesRoute: typeof EspaceInvoicesRoute
   EspaceLoyaltyRoute: typeof EspaceLoyaltyRoute
   EspacePaymentsRoute: typeof EspacePaymentsRoute
   EspaceSubscriptionsRoute: typeof EspaceSubscriptionsRoute
+  EspaceInvoicesIdRoute: typeof EspaceInvoicesIdRoute
   EspaceMembersIdRoute: typeof EspaceMembersIdRoute
+  EspaceInvoicesIndexRoute: typeof EspaceInvoicesIndexRoute
   EspaceMembersIndexRoute: typeof EspaceMembersIndexRoute
   EspaceMembersIdCardRoute: typeof EspaceMembersIdCardRoute
 }
@@ -420,11 +440,12 @@ const EspaceRouteChildren: EspaceRouteChildren = {
   EspaceCheckinRoute: EspaceCheckinRoute,
   EspaceDashboardRoute: EspaceDashboardRoute,
   EspaceExpensesRoute: EspaceExpensesRoute,
-  EspaceInvoicesRoute: EspaceInvoicesRoute,
   EspaceLoyaltyRoute: EspaceLoyaltyRoute,
   EspacePaymentsRoute: EspacePaymentsRoute,
   EspaceSubscriptionsRoute: EspaceSubscriptionsRoute,
+  EspaceInvoicesIdRoute: EspaceInvoicesIdRoute,
   EspaceMembersIdRoute: EspaceMembersIdRoute,
+  EspaceInvoicesIndexRoute: EspaceInvoicesIndexRoute,
   EspaceMembersIndexRoute: EspaceMembersIndexRoute,
   EspaceMembersIdCardRoute: EspaceMembersIdCardRoute,
 }
