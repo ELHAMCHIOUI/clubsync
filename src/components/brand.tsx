@@ -1,9 +1,17 @@
 import { cn } from "@/lib/utils";
+import { useOrg } from "@/lib/mock-session";
+import { useApplyTheme, useTheme } from "@/lib/theme";
 
 export function BrandMark({ className }: { className?: string }) {
+  const { org } = useOrg();
+  const { logo } = useTheme(org?.id);
+  useApplyTheme(org?.id);
+  if (logo) {
+    return <img src={logo} alt={org?.name ?? "Logo"} className={cn("size-10 rounded-xl bg-card object-contain shadow-card", className)} />;
+  }
   return (
     <div className={cn("grid size-10 place-items-center rounded-xl bg-brand font-display text-xl font-bold text-primary-foreground shadow-card", className)}>
-      N
+      {org?.name?.[0]?.toUpperCase() ?? "N"}
     </div>
   );
 }

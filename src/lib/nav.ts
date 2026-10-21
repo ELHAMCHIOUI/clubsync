@@ -1,6 +1,6 @@
 import {
   ScanLine, LayoutDashboard, Users, CalendarCheck, Wallet, FileText, Gift, Landmark,
-  Receipt, Calculator, Settings, type LucideIcon,
+  Receipt, Calculator, Settings, Palette, type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem { title: string; to: string; icon: LucideIcon; adminOnly?: boolean; phase: number }
@@ -17,6 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
   { title: "Charges", to: "/expenses", icon: Receipt, adminOnly: true, phase: 6 },
   { title: "Comptabilité", to: "/accounting", icon: Calculator, adminOnly: true, phase: 6 },
   { title: "Administration", to: "/admin", icon: Settings, adminOnly: true, phase: 6 },
+  { title: "Thème", to: "/theme", icon: Palette, adminOnly: true, phase: 6 },
 ];
 
 export const ADMIN_PATHS = NAV_ITEMS.filter((i) => i.adminOnly).map((i) => i.to);
