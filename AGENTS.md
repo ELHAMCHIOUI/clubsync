@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Session/salle/rôle are simulated in `src/lib/mock-session.tsx` (localStorage) until the user's external database is linked; keep its `useOrg()` API so pages don't change when it is swapped for the real client.
+- Signed-in pages live under the pathless `_espace` layout, which handles login/onboarding redirects and blocks admin-only paths listed in `src/lib/nav.ts`.

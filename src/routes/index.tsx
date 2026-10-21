@@ -1,24 +1,28 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useOrg } from "@/lib/mock-session";
+import { BrandMark } from "@/components/brand";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Nabd — Gestion de salle de sport" },
+      { name: "description", content: "Gérez l'accueil, les membres et la caisse de votre salle avec Nabd." },
+      { property: "og:title", content: "Nabd — Gestion de salle de sport" },
+      { property: "og:description", content: "Gérez l'accueil, les membres et la caisse de votre salle avec Nabd." },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const { ready, profile, org } = useOrg();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!ready) return;
+    navigate({ to: !profile ? "/login" : !org ? "/onboarding" : "/checkin", replace: true });
+  }, [ready, profile, org, navigate]);
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <div className="flex min-h-screen items-center justify-center"><BrandMark className="animate-pulse" /></div>
   );
 }
