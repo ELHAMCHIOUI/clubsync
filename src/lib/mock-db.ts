@@ -605,3 +605,64 @@ export async function rpcValidateCashClosing(id: string) {
   if (!c) throw new Error("Clôture introuvable");
   c.validated_by = me().userId; c.validated_at = nowIso(); save();
 }
+
+// ---------- Phase 6 : administration, charges, comptabilité ----------
+export async function savePlan(id: string | null, input: Pick<Plan, "name" | "duration_months" | "price_cents">) {
+  requireAdmin();
+  if (input.name.trim().length < 2) throw new Error("Le nom de la formule est obligatoire");
+  if (!Number.isInteger(input.duration_months) || input.duration_months <= 0) throw new Error("Durée invalide");
+  if (!Number.isSafeInteger(input.price_cents) || input.price_cents < 0) throw new Error("Prix invalide");
+  const values = { ...input, name: input.name.trim() };
+  if (id) {
+    const p = own(data().plans).find((x) => x.id === id);
+    if (!p) throw new Error("Formule introuvable");
+    Object.assign(p, values);
+  } else data().plans.push({ ...values, id: uid(), organization_id: me().orgId, is_active: true, created_at: nowIso() });
+  save();
+}
+export async function setPlanActive(id: string, active: boolean) {
+  requireAdmin();
+  const p = own(data().plans).find((x) => x.id === id);
+  if (!p) throw new Error("Formule introuvable");
+  p.is_active = active; save();
+}
+export async function saveReminderTemplate(id: string, patch: Pick<ReminderTemplate, "template" | "offset_days" | "is_active">) {
+  requireAdmin();
+  if (!patch.template.trim()) throw new Error("Le message est obligatoire");
+  if (!Number.isInteger(patch.offset_days)) throw new Error("Délai invalide");
+  const t = own(data().templates).find((x) => x.id === id);
+  if (!t) throw new Error("Modèle introuvable");
+  Object.assign(t, patch); save();
+}
+export type ExpenseInput = Pick<Expense, "category" | "label" | "amount_cents" | "method" | "spent_on">;
+export async function saveExpense(id: string | null, input: ExpenseInput) {
+  requireAdmin();
+  if (!EXPENSE_CATEGORIES.some((c) => c === input.category)) throw new Error("Catégorie invalide");
+  if (input.label.trim().length < 2) throw new Error("Le libellé est obligatoire");
+  if (!Number.isSafeInteger(input.amount_cents) || input.amount_cents <= 0) throw new Error("Le montant doit être supérieur à zéro");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.spent_on) || Number.isNaN(Date.parse(input.spent_on + "T12:00:00Z")) || new Date(input.spent_on + "T12:00:00Z").toISOString().slice(0, 10) !== input.spent_on) throw new Error("Date invalide");
+  if (!["cash", "card", "transfer", "cheque"].includes(input.method)) throw new Error("Mode de paiement invalide");
+  const values = { ...input, label: input.label.trim() };
+  if (id) {
+    const e = own(data().expenses).find((x) => x.id === id);
+    if (!e) throw new Error("Charge introuvable");
+    Object.assign(e, values);
+  } else data().expenses.push({ ...values, id: uid(), organization_id: me().orgId, created_by: me().userId, created_at: nowIso() });
+  save();
+}
+export async function deleteExpense(id: string) {
+  requireAdmin();
+  if (!own(data().expenses).some((x) => x.id === id)) throw new Error("Charge introuvable");
+  data().expenses = data().expenses.filter((x) => x.id !== id); save();
+}
+export function accountingSummary(orgId: string, ym: string) {
+  requireAdmin();
+  if (orgId !== me().orgId) throw new Error("Salle inaccessible");
+  const payments = paymentOverview(orgId).filter((p) => !p.voided_at && p.paid_on.startsWith(ym));
+  const charges = expenses(orgId).filter((e) => e.spent_on.startsWith(ym));
+  const byMethod = (["cash", "card", "transfer", "cheque"] as PaymentMethod[]).map((method) => ({ method, revenue: payments.filter((p) => p.method === method).reduce((s, p) => s + p.amount_cents, 0), expenses: charges.filter((e) => e.method === method).reduce((s, e) => s + e.amount_cents, 0) }));
+  const byCategory = EXPENSE_CATEGORIES.map((category) => ({ category, total: charges.filter((e) => e.category === category).reduce((s, e) => s + e.amount_cents, 0) })).filter((e) => e.total > 0);
+  const revenue = payments.reduce((s, p) => s + p.amount_cents, 0);
+  const totalExpenses = charges.reduce((s, e) => s + e.amount_cents, 0);
+  return { revenue, expenses: totalExpenses, net: revenue - totalExpenses, byMethod, byCategory, payments, charges };
+}
