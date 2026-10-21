@@ -24,7 +24,10 @@ import { Route as EspaceInvoicesRouteImport } from './routes/_espace.invoices'
 import { Route as EspaceLoyaltyRouteImport } from './routes/_espace.loyalty'
 import { Route as EspacePaymentsRouteImport } from './routes/_espace.payments'
 import { Route as EspaceSubscriptionsRouteImport } from './routes/_espace.subscriptions'
+import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as EspaceMembersIndexRouteImport } from './routes/_espace.members.index'
+import { Route as EspaceMembersIdRouteImport } from './routes/_espace.members.$id'
+import { Route as EspaceMembersIdCardRouteImport } from './routes/_espace.members.$id_.card'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,9 +103,24 @@ const EspaceSubscriptionsRoute = EspaceSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => EspaceRoute,
 } as any)
+const CTokenRoute = CTokenRouteImport.update({
+  id: '/c/$token',
+  path: '/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EspaceMembersIndexRoute = EspaceMembersIndexRouteImport.update({
   id: '/members/',
   path: '/members/',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceMembersIdRoute = EspaceMembersIdRouteImport.update({
+  id: '/members/$id',
+  path: '/members/$id',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceMembersIdCardRoute = EspaceMembersIdCardRouteImport.update({
+  id: '/members/$id_/card',
+  path: '/members/$id/card',
   getParentRoute: () => EspaceRoute,
 } as any)
 
@@ -121,7 +139,10 @@ export interface FileRoutesByFullPath {
   '/loyalty': typeof EspaceLoyaltyRoute
   '/payments': typeof EspacePaymentsRoute
   '/subscriptions': typeof EspaceSubscriptionsRoute
+  '/c/$token': typeof CTokenRoute
+  '/members/$id': typeof EspaceMembersIdRoute
   '/members/': typeof EspaceMembersIndexRoute
+  '/members/$id/card': typeof EspaceMembersIdCardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -138,7 +159,10 @@ export interface FileRoutesByTo {
   '/loyalty': typeof EspaceLoyaltyRoute
   '/payments': typeof EspacePaymentsRoute
   '/subscriptions': typeof EspaceSubscriptionsRoute
+  '/c/$token': typeof CTokenRoute
+  '/members/$id': typeof EspaceMembersIdRoute
   '/members': typeof EspaceMembersIndexRoute
+  '/members/$id/card': typeof EspaceMembersIdCardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -157,7 +181,10 @@ export interface FileRoutesById {
   '/_espace/loyalty': typeof EspaceLoyaltyRoute
   '/_espace/payments': typeof EspacePaymentsRoute
   '/_espace/subscriptions': typeof EspaceSubscriptionsRoute
+  '/c/$token': typeof CTokenRoute
+  '/_espace/members/$id': typeof EspaceMembersIdRoute
   '/_espace/members/': typeof EspaceMembersIndexRoute
+  '/_espace/members/$id_/card': typeof EspaceMembersIdCardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -176,7 +203,10 @@ export interface FileRouteTypes {
     | '/loyalty'
     | '/payments'
     | '/subscriptions'
+    | '/c/$token'
+    | '/members/$id'
     | '/members/'
+    | '/members/$id/card'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -193,7 +223,10 @@ export interface FileRouteTypes {
     | '/loyalty'
     | '/payments'
     | '/subscriptions'
+    | '/c/$token'
+    | '/members/$id'
     | '/members'
+    | '/members/$id/card'
   id:
     | '__root__'
     | '/'
@@ -211,7 +244,10 @@ export interface FileRouteTypes {
     | '/_espace/loyalty'
     | '/_espace/payments'
     | '/_espace/subscriptions'
+    | '/c/$token'
+    | '/_espace/members/$id'
     | '/_espace/members/'
+    | '/_espace/members/$id_/card'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -220,6 +256,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
+  CTokenRoute: typeof CTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -329,11 +366,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EspaceSubscriptionsRouteImport
       parentRoute: typeof EspaceRoute
     }
+    '/c/$token': {
+      id: '/c/$token'
+      path: '/c/$token'
+      fullPath: '/c/$token'
+      preLoaderRoute: typeof CTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_espace/members/': {
       id: '/_espace/members/'
       path: '/members'
       fullPath: '/members/'
       preLoaderRoute: typeof EspaceMembersIndexRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/members/$id': {
+      id: '/_espace/members/$id'
+      path: '/members/$id'
+      fullPath: '/members/$id'
+      preLoaderRoute: typeof EspaceMembersIdRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/members/$id_/card': {
+      id: '/_espace/members/$id_/card'
+      path: '/members/$id/card'
+      fullPath: '/members/$id/card'
+      preLoaderRoute: typeof EspaceMembersIdCardRouteImport
       parentRoute: typeof EspaceRoute
     }
   }
@@ -350,7 +408,9 @@ interface EspaceRouteChildren {
   EspaceLoyaltyRoute: typeof EspaceLoyaltyRoute
   EspacePaymentsRoute: typeof EspacePaymentsRoute
   EspaceSubscriptionsRoute: typeof EspaceSubscriptionsRoute
+  EspaceMembersIdRoute: typeof EspaceMembersIdRoute
   EspaceMembersIndexRoute: typeof EspaceMembersIndexRoute
+  EspaceMembersIdCardRoute: typeof EspaceMembersIdCardRoute
 }
 
 const EspaceRouteChildren: EspaceRouteChildren = {
@@ -364,7 +424,9 @@ const EspaceRouteChildren: EspaceRouteChildren = {
   EspaceLoyaltyRoute: EspaceLoyaltyRoute,
   EspacePaymentsRoute: EspacePaymentsRoute,
   EspaceSubscriptionsRoute: EspaceSubscriptionsRoute,
+  EspaceMembersIdRoute: EspaceMembersIdRoute,
   EspaceMembersIndexRoute: EspaceMembersIndexRoute,
+  EspaceMembersIdCardRoute: EspaceMembersIdCardRoute,
 }
 
 const EspaceRouteWithChildren =
@@ -376,6 +438,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
+  CTokenRoute: CTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
