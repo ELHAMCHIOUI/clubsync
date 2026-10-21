@@ -77,7 +77,7 @@ function CashPage() {
             </div>
           )}
         </div>
-        <Section title="Historique">
+        <Section title="Historique" className="min-w-0">
           {rows.length === 0 ? <p className="text-sm text-muted-foreground">Aucune clôture pour l'instant.</p> : (
             <div className="overflow-x-auto">
               <Table>

@@ -526,9 +526,9 @@ function seedExpenses(orgId: string) {
     const day = addMonths(today.slice(0, 7) + "-05", -i);
     const add = (category: string, label: string, cents: number, method: PaymentMethod) =>
       d.expenses.push({ id: uid(), organization_id: orgId, category, label, amount_cents: cents, method, spent_on: day, created_by: null, created_at: nowIso() });
-    add("Loyer", "Loyer du local", 800000, "transfer");
-    add("Salaires", "Coach et réception", 900000, "transfer");
-    add("Électricité", "Facture ONEE", 120000 + i * 7000, "cash");
+    add("Loyer", "Loyer du local", 150000, "transfer");
+    add("Salaires", "Coach et réception", 100000, "transfer");
+    add("Électricité", "Facture ONEE", 30000 + i * 2000, "cash");
   }
   save();
 }
