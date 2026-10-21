@@ -22,6 +22,8 @@ export const Route = createFileRoute("/_espace/members/$id")({
       { name: "description", content: "Abonnements, paiements, carte et fidélité du membre." },
       { property: "og:title", content: "Fiche membre — Nabd" },
       { property: "og:description", content: "Abonnements, paiements, carte et fidélité du membre." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MemberPage,

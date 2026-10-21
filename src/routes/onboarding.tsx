@@ -15,6 +15,8 @@ export const Route = createFileRoute("/onboarding")({
       { name: "description", content: "Donnez un nom à votre salle pour commencer avec Nabd." },
       { property: "og:title", content: "Créer votre salle — Nabd" },
       { property: "og:description", content: "Donnez un nom à votre salle pour commencer avec Nabd." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: OnboardingPage,

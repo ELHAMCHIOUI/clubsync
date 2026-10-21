@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_espace/checkin")({
       { name: "description", content: "Scannez les cartes des membres à l'entrée de la salle." },
       { property: "og:title", content: "Accueil (scan) — Nabd" },
       { property: "og:description", content: "Scannez les cartes des membres à l'entrée de la salle." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CheckinPage,

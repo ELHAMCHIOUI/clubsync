@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_espace/invoices/$id")({
       { name: "description", content: "Facture imprimable au format A4." },
       { property: "og:title", content: "Facture — Nabd" },
       { property: "og:description", content: "Facture imprimable au format A4." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: InvoicePage,

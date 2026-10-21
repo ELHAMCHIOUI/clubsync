@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_espace/members/$id_/card")({
       { name: "description", content: "Carte membre imprimable au format carte bancaire." },
       { property: "og:title", content: "Carte imprimable — Nabd" },
       { property: "og:description", content: "Carte membre imprimable au format carte bancaire." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PrintCard,

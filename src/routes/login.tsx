@@ -15,6 +15,8 @@ export const Route = createFileRoute("/login")({
       { name: "description", content: "Connectez-vous à Nabd pour gérer votre salle de sport." },
       { property: "og:title", content: "Connexion — Nabd" },
       { property: "og:description", content: "Connectez-vous à Nabd pour gérer votre salle de sport." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoginPage,

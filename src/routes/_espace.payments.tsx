@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_espace/payments")({
       { name: "description", content: "Encaissements du mois, par mode de paiement." },
       { property: "og:title", content: "Paiements — Nabd" },
       { property: "og:description", content: "Encaissements du mois, par mode de paiement." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PaymentsPage,

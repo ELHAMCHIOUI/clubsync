@@ -25,6 +25,8 @@ export const Route = createFileRoute("/_espace/loyalty")({
       { name: "description", content: "Règles de points, récompenses et échanges des membres." },
       { property: "og:title", content: "Fidélité — Nabd" },
       { property: "og:description", content: "Règles de points, récompenses et échanges des membres." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoyaltyPage,
