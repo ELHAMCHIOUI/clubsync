@@ -10,33 +10,216 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EspaceRouteImport } from './routes/_espace'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as EspaceAccountingRouteImport } from './routes/_espace.accounting'
+import { Route as EspaceAdminRouteImport } from './routes/_espace.admin'
+import { Route as EspaceCashRouteImport } from './routes/_espace.cash'
+import { Route as EspaceCheckinRouteImport } from './routes/_espace.checkin'
+import { Route as EspaceDashboardRouteImport } from './routes/_espace.dashboard'
+import { Route as EspaceExpensesRouteImport } from './routes/_espace.expenses'
+import { Route as EspaceInvoicesRouteImport } from './routes/_espace.invoices'
+import { Route as EspaceLoyaltyRouteImport } from './routes/_espace.loyalty'
+import { Route as EspaceMembersRouteImport } from './routes/_espace.members'
+import { Route as EspacePaymentsRouteImport } from './routes/_espace.payments'
+import { Route as EspaceSubscriptionsRouteImport } from './routes/_espace.subscriptions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EspaceRoute = EspaceRouteImport.update({
+  id: '/_espace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EspaceAccountingRoute = EspaceAccountingRouteImport.update({
+  id: '/accounting',
+  path: '/accounting',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceAdminRoute = EspaceAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceCashRoute = EspaceCashRouteImport.update({
+  id: '/cash',
+  path: '/cash',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceCheckinRoute = EspaceCheckinRouteImport.update({
+  id: '/checkin',
+  path: '/checkin',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceDashboardRoute = EspaceDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceExpensesRoute = EspaceExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceInvoicesRoute = EspaceInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceLoyaltyRoute = EspaceLoyaltyRouteImport.update({
+  id: '/loyalty',
+  path: '/loyalty',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceMembersRoute = EspaceMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspacePaymentsRoute = EspacePaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => EspaceRoute,
+} as any)
+const EspaceSubscriptionsRoute = EspaceSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => EspaceRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
+  '/accounting': typeof EspaceAccountingRoute
+  '/admin': typeof EspaceAdminRoute
+  '/cash': typeof EspaceCashRoute
+  '/checkin': typeof EspaceCheckinRoute
+  '/dashboard': typeof EspaceDashboardRoute
+  '/expenses': typeof EspaceExpensesRoute
+  '/invoices': typeof EspaceInvoicesRoute
+  '/loyalty': typeof EspaceLoyaltyRoute
+  '/members': typeof EspaceMembersRoute
+  '/payments': typeof EspacePaymentsRoute
+  '/subscriptions': typeof EspaceSubscriptionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
+  '/accounting': typeof EspaceAccountingRoute
+  '/admin': typeof EspaceAdminRoute
+  '/cash': typeof EspaceCashRoute
+  '/checkin': typeof EspaceCheckinRoute
+  '/dashboard': typeof EspaceDashboardRoute
+  '/expenses': typeof EspaceExpensesRoute
+  '/invoices': typeof EspaceInvoicesRoute
+  '/loyalty': typeof EspaceLoyaltyRoute
+  '/members': typeof EspaceMembersRoute
+  '/payments': typeof EspacePaymentsRoute
+  '/subscriptions': typeof EspaceSubscriptionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_espace': typeof EspaceRouteWithChildren
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
+  '/_espace/accounting': typeof EspaceAccountingRoute
+  '/_espace/admin': typeof EspaceAdminRoute
+  '/_espace/cash': typeof EspaceCashRoute
+  '/_espace/checkin': typeof EspaceCheckinRoute
+  '/_espace/dashboard': typeof EspaceDashboardRoute
+  '/_espace/expenses': typeof EspaceExpensesRoute
+  '/_espace/invoices': typeof EspaceInvoicesRoute
+  '/_espace/loyalty': typeof EspaceLoyaltyRoute
+  '/_espace/members': typeof EspaceMembersRoute
+  '/_espace/payments': typeof EspacePaymentsRoute
+  '/_espace/subscriptions': typeof EspaceSubscriptionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+    | '/accounting'
+    | '/admin'
+    | '/cash'
+    | '/checkin'
+    | '/dashboard'
+    | '/expenses'
+    | '/invoices'
+    | '/loyalty'
+    | '/members'
+    | '/payments'
+    | '/subscriptions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+    | '/accounting'
+    | '/admin'
+    | '/cash'
+    | '/checkin'
+    | '/dashboard'
+    | '/expenses'
+    | '/invoices'
+    | '/loyalty'
+    | '/members'
+    | '/payments'
+    | '/subscriptions'
+  id:
+    | '__root__'
+    | '/'
+    | '/_espace'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+    | '/_espace/accounting'
+    | '/_espace/admin'
+    | '/_espace/cash'
+    | '/_espace/checkin'
+    | '/_espace/dashboard'
+    | '/_espace/expenses'
+    | '/_espace/invoices'
+    | '/_espace/loyalty'
+    | '/_espace/members'
+    | '/_espace/payments'
+    | '/_espace/subscriptions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EspaceRoute: typeof EspaceRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +231,151 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_espace': {
+      id: '/_espace'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof EspaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_espace/accounting': {
+      id: '/_espace/accounting'
+      path: '/accounting'
+      fullPath: '/accounting'
+      preLoaderRoute: typeof EspaceAccountingRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/admin': {
+      id: '/_espace/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof EspaceAdminRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/cash': {
+      id: '/_espace/cash'
+      path: '/cash'
+      fullPath: '/cash'
+      preLoaderRoute: typeof EspaceCashRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/checkin': {
+      id: '/_espace/checkin'
+      path: '/checkin'
+      fullPath: '/checkin'
+      preLoaderRoute: typeof EspaceCheckinRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/dashboard': {
+      id: '/_espace/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof EspaceDashboardRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/expenses': {
+      id: '/_espace/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof EspaceExpensesRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/invoices': {
+      id: '/_espace/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof EspaceInvoicesRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/loyalty': {
+      id: '/_espace/loyalty'
+      path: '/loyalty'
+      fullPath: '/loyalty'
+      preLoaderRoute: typeof EspaceLoyaltyRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/members': {
+      id: '/_espace/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof EspaceMembersRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/payments': {
+      id: '/_espace/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof EspacePaymentsRouteImport
+      parentRoute: typeof EspaceRoute
+    }
+    '/_espace/subscriptions': {
+      id: '/_espace/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof EspaceSubscriptionsRouteImport
+      parentRoute: typeof EspaceRoute
+    }
   }
 }
 
+interface EspaceRouteChildren {
+  EspaceAccountingRoute: typeof EspaceAccountingRoute
+  EspaceAdminRoute: typeof EspaceAdminRoute
+  EspaceCashRoute: typeof EspaceCashRoute
+  EspaceCheckinRoute: typeof EspaceCheckinRoute
+  EspaceDashboardRoute: typeof EspaceDashboardRoute
+  EspaceExpensesRoute: typeof EspaceExpensesRoute
+  EspaceInvoicesRoute: typeof EspaceInvoicesRoute
+  EspaceLoyaltyRoute: typeof EspaceLoyaltyRoute
+  EspaceMembersRoute: typeof EspaceMembersRoute
+  EspacePaymentsRoute: typeof EspacePaymentsRoute
+  EspaceSubscriptionsRoute: typeof EspaceSubscriptionsRoute
+}
+
+const EspaceRouteChildren: EspaceRouteChildren = {
+  EspaceAccountingRoute: EspaceAccountingRoute,
+  EspaceAdminRoute: EspaceAdminRoute,
+  EspaceCashRoute: EspaceCashRoute,
+  EspaceCheckinRoute: EspaceCheckinRoute,
+  EspaceDashboardRoute: EspaceDashboardRoute,
+  EspaceExpensesRoute: EspaceExpensesRoute,
+  EspaceInvoicesRoute: EspaceInvoicesRoute,
+  EspaceLoyaltyRoute: EspaceLoyaltyRoute,
+  EspaceMembersRoute: EspaceMembersRoute,
+  EspacePaymentsRoute: EspacePaymentsRoute,
+  EspaceSubscriptionsRoute: EspaceSubscriptionsRoute,
+}
+
+const EspaceRouteWithChildren =
+  EspaceRoute._addFileChildren(EspaceRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EspaceRoute: EspaceRouteWithChildren,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
