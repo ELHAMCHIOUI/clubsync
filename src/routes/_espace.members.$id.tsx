@@ -6,10 +6,11 @@ import {
   PhotoSection, ReferralSection, Section, SubscriptionsSection,
 } from "@/components/member/sections";
 import { StatusBadge } from "@/components/status";
+import { ReminderButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { act } from "@/lib/act";
 import { formatDateTime } from "@/lib/format";
-import { attendanceOverview, deleteMember, memberOverview, updateMember, useDb } from "@/lib/mock-db";
+import { attendanceOverview, deleteMember, memberOverview, subscriptionOverview, updateMember, useDb } from "@/lib/mock-db";
 import { useOrg } from "@/lib/mock-session";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ function MemberPage() {
       </div>
     );
   }
+  const cur = subscriptionOverview(org.id).find((s) => s.id === m.subscription_id);
   const visited = attendanceOverview(org.id).some((a) => a.member_id === m.id && a.result === "accepted");
   const steps = [
     { label: "Prendre la photo", done: !!m.photo_path },
@@ -65,6 +67,12 @@ function MemberPage() {
           </div>
           <p className="text-sm text-muted-foreground">{m.phone ?? "Pas de téléphone"} · inscrit le {formatDateTime(m.created_at)} · dernière visite : {formatDateTime(m.last_visit_at)}</p>
         </div>
+        {cur && !m.archived_at && (
+          <div className="flex flex-wrap gap-2">
+            {cur.balance_cents > 0 && <ReminderButton sub={cur} kind="unpaid" showLast />}
+            <ReminderButton sub={cur} kind="expiry" showLast />
+          </div>
+        )}
       </header>
 
       {search.new === 1 && (
