@@ -173,7 +173,7 @@ function CorrectDialog({ sub }: { sub: { id: string; start_date: string; end_dat
         </div>
         <Button onClick={async () => {
           const c = parseMAD(due);
-          if (c === null) return toast.error("Montant invalide");
+          if (c === null) { toast.error("Montant invalide"); return; }
           try { await act(() => rpcUpdateSubscription(sub.id, start, end, c), "Abonnement corrigé"); setOpen(false); } catch { /* */ }
         }}>Enregistrer</Button>
       </DialogContent>
@@ -211,7 +211,7 @@ export function PaymentSection({ memberId }: { memberId: string }) {
       </div>
       <Button className="mt-4 w-full" disabled={busy} onClick={async () => {
         const c = parseMAD(shown);
-        if (c === null) return toast.error("Montant invalide");
+        if (c === null) { toast.error("Montant invalide"); return; }
         setBusy(true);
         try { await act(() => rpcRecordPayment(cur!.id, c, method, reference.trim() || null, note.trim() || null), `Paiement de ${formatMAD(c)} enregistré`); setAmount(""); setReference(""); setNote(""); }
         catch { /* */ } finally { setBusy(false); }
@@ -260,7 +260,7 @@ export function NewSubscriptionSection({ member }: { member: MemberOverview }) {
       <p className="mt-3 text-sm">Montant dû : <strong>{formatMAD(Math.max(0, due))}</strong></p>
       <Button className="mt-3 w-full" disabled={busy} onClick={async () => {
         const firstCents = first ? parseMAD(first) : due;
-        if (discCents === null || firstCents === null) return toast.error("Montant invalide");
+        if (discCents === null || firstCents === null) { toast.error("Montant invalide"); return; }
         setBusy(true);
         try {
           await act(() => rpcCreateSubscription({ member: member.id, plan: plan.id, start, discountCents: discCents, firstPaymentCents: firstCents, method, reference: reference.trim() || null }, org.max_reception_discount_pct), "Abonnement créé");
