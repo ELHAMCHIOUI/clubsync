@@ -1,6 +1,6 @@
 # Nabd — roadmap (front uniquement, données simulées)
 - [x] Phase 1 : connexion, inscription, salle, menu
-- [ ] Phase 2 : accueil / scan (priorité demandée : scan, recherche, passages)
+- [x] Phase 2 : accueil / scan, recherche, passages
 - [ ] Phase 3 : membres, fiche, carte imprimable, carte publique
 - [ ] Phase 4 : abonnements, paiements, factures
 - [ ] Phase 5 : tableau de bord, fidélité, caisse
