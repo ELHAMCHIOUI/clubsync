@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { act } from "@/lib/act";
 import { formatDay, formatMAD, parseMAD, todayLocal } from "@/lib/format";
-import { cashClosings, rpcCashExpected, rpcCloseCash, rpcValidateCashClosing, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { cashClosings, rpcCashExpected, rpcCloseCash, rpcValidateCashClosing, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/cash")({

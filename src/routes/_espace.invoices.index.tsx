@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { act } from "@/lib/act";
 import { formatDay, formatMAD, invoiceNumber } from "@/lib/format";
-import { invoices, rpcCreateInvoice, subscriptionOverview, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { invoices, rpcCreateInvoice, subscriptionOverview, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 
 export const Route = createFileRoute("/_espace/invoices/")({
   head: () => ({

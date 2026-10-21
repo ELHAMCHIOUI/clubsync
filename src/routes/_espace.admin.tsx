@@ -4,8 +4,8 @@ import { CheckCircle2 } from "lucide-react";
 import { PageHeader } from "@/components/page";
 import { GymSettings, PlanSettings, TeamSettings, ReminderSettings } from "@/components/admin-forms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOrg } from "@/lib/mock-session";
-import { plans, rewards, useDb } from "@/lib/mock-db";
+import { useOrg } from "@/lib/session";
+import { plans, rewards, useDb } from "@/lib/db";
 
 export const Route = createFileRoute("/_espace/admin")({
   validateSearch: (s: Record<string, unknown>): { welcome?: number } =>

@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDay, formatMAD, invoiceNumber, METHOD_LABELS, totalHT } from "@/lib/format";
-import { invoices, members, paymentOverview, subscriptionOverview, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { invoices, members, paymentOverview, subscriptionOverview, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 
 export const Route = createFileRoute("/_espace/invoices/$id")({
   head: () => ({

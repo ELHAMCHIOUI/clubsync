@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { journalCSV, type JournalEntry } from "@/lib/accounting";
 import { formatDay, formatMAD, METHOD_LABELS, todayLocal } from "@/lib/format";
-import { accountingSummary, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { accountingSummary, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/accounting")({

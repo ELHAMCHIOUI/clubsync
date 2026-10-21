@@ -4,8 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Gift, Smartphone } from "lucide-react";
 import { StatusBadge } from "@/components/status";
 import { formatDay } from "@/lib/format";
-import { rpcGetPublicCard, type PublicCard } from "@/lib/mock-db";
-import { readOrganizations } from "@/lib/mock-session";
+import { rpcGetPublicCard, type PublicCard } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/c/$token")({
@@ -27,7 +26,7 @@ function PublicCardPage() {
   const { token } = Route.useParams();
   const [card, setCard] = useState<PublicCard | null | undefined>(undefined);
   useEffect(() => {
-    void rpcGetPublicCard(token, (id) => readOrganizations().find((o) => o.id === id)).then(setCard);
+    void rpcGetPublicCard(token).then(setCard).catch(() => setCard(null));
   }, [token]);
 
   return (

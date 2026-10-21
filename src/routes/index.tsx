@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useOrg } from "@/lib/mock-session";
+import { useOrg } from "@/lib/session";
 import { BrandMark } from "@/components/brand";
 
 export const Route = createFileRoute("/")({

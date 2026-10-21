@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useOrg } from "@/lib/mock-session";
+import { useOrg } from "@/lib/session";
 import { DEFAULT_THEME, THEME_PRESETS, isHexColor, saveTheme, useTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_espace/theme")({

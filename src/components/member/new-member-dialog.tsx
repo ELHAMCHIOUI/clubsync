@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { act } from "@/lib/act";
-import { insertMember, members } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { insertMember, members } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 
 export function NewMemberDialog({ trigger }: { trigger?: React.ReactNode }) {
   const { org } = useOrg();

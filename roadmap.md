@@ -5,4 +5,4 @@
 - [x] Phase 4 : abonnements, paiements, factures, relances WhatsApp
 - [x] Phase 5 : tableau de bord, fidélité, caisse
 - [x] Phase 6 : administration, charges, comptabilité
-- [ ] Brancher la vraie base (bloqué : base externe non reliée)
+- [x] Brancher la vraie base Supabase (src/lib/db.ts, src/lib/session.tsx)

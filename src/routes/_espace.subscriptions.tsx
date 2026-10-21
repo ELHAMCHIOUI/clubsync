@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDay, formatMAD } from "@/lib/format";
-import { memberOverview, subscriptionOverview, useDb, type SubStatus } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { memberOverview, subscriptionOverview, useDb, type SubStatus } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/subscriptions")({

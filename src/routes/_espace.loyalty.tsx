@@ -14,8 +14,8 @@ import { formatDateTime } from "@/lib/format";
 import {
   insertReward, ledgerOverview, loyaltySettings, redemptions, rewards, setRewardActive, updateLoyaltySettings, useDb,
   type LoyaltySettings, type RewardType,
-} from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+} from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/loyalty")({

@@ -2,9 +2,9 @@ import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/
 import { useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { BrandMark } from "@/components/brand";
-import { useOrg } from "@/lib/mock-session";
+import { useOrg } from "@/lib/session";
 import { isAdminPath } from "@/lib/nav";
-import { setActor } from "@/lib/mock-db";
+import { setActor, useDbReady } from "@/lib/db";
 
 export const Route = createFileRoute("/_espace")({
   component: EspaceLayout,
@@ -15,6 +15,7 @@ function EspaceLayout() {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const blocked = !isAdmin && isAdminPath(path);
+  const db = useDbReady();
 
   useEffect(() => {
     if (!ready) return;
@@ -27,5 +28,18 @@ function EspaceLayout() {
     return <div className="flex min-h-screen items-center justify-center"><BrandMark className="animate-pulse" /></div>;
   }
   setActor({ userId: profile.id, name: profile.full_name, role: role!, orgId: org.id, antiPassbackMinutes: org.anti_passback_minutes });
-  return <AppShell><Outlet /></AppShell>;
+  // Premier chargement des données de la salle depuis Supabase
+  if (!db.loaded) {
+    return <div className="flex min-h-screen items-center justify-center"><BrandMark className="animate-pulse" /></div>;
+  }
+  return (
+    <AppShell>
+      {db.error && (
+        <div className="mx-4 mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive lg:mx-8">
+          Données non chargées : {db.error}
+        </div>
+      )}
+      <Outlet />
+    </AppShell>
+  );
 }

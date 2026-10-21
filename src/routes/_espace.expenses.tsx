@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { act } from "@/lib/act";
 import { formatDay, formatMAD, METHOD_LABELS, todayLocal } from "@/lib/format";
-import { accountingSummary, deleteExpense, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { accountingSummary, deleteExpense, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 
 export const Route = createFileRoute("/_espace/expenses")({
   head: () => ({

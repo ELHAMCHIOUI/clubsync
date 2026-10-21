@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Camera, Hand, Loader2, Search, TestTube2 } from "lucide-react";
+import { Camera, Hand, Loader2, Search } from "lucide-react";
 import { PageHeader } from "@/components/page";
 import { CameraScanner } from "@/components/checkin/camera-scanner";
 import { ResultPanel } from "@/components/checkin/result-panel";
@@ -12,9 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { localTime, todayLocal } from "@/lib/format";
 import {
-  attendanceOverview, demoCodes, memberOverview, rpcCheckIn, rpcManualCheckIn, useDb, type CheckInResult,
-} from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+  attendanceOverview, memberOverview, rpcCheckIn, rpcManualCheckIn, useDb, type CheckInResult,
+} from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/checkin")({
@@ -90,7 +90,6 @@ function CheckinPage() {
                 <Button variant="outline" className="w-full" onClick={() => setCamera(true)}><Camera />Scanner avec la caméra</Button>
               )}
             </div>
-            {org && <DemoCodes orgId={org.id} onPick={(c) => void scan(c)} />}
           </section>
           <ManualEntry onResult={show} />
         </div>
@@ -100,24 +99,6 @@ function CheckinPage() {
         </div>
       </div>
     </>
-  );
-}
-
-function DemoCodes({ orgId, onPick }: { orgId: string; onPick: (code: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const codes = demoCodes(orgId);
-  return (
-    <div className="mt-4 border-t pt-3">
-      <button type="button" onClick={() => setOpen(!open)} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
-        <TestTube2 className="size-4" />Démo : simuler un scan
-      </button>
-      {open && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {codes.map((c) => <Button key={c.code} size="sm" variant="secondary" onClick={() => onPick(c.code)}>{c.name}</Button>)}
-          <Button size="sm" variant="secondary" onClick={() => onPick("CODE-INCONNU")}>QR inconnu</Button>
-        </div>
-      )}
-    </div>
   );
 }
 

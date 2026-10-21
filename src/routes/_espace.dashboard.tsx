@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { formatDay, formatMAD, localTime, METHOD_LABELS, monthLabel, shiftMonth, todayLocal } from "@/lib/format";
 import {
   attendanceOverview, memberOverview, monthTotals, paymentOverview, subscriptionOverview, useDb, type PaymentMethod,
-} from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+} from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/dashboard")({

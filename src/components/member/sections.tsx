@@ -23,8 +23,8 @@ import {
   attendanceOverview, getCard, memberLedger, members, paymentOverview, plans, rewards, rpcAdjustPoints, rpcCreateSubscription,
   rpcManualCheckIn, rpcRecordPayment, rpcRedeemReward, rpcRegenerateCard, rpcSetSubscriptionState, rpcUpdateSubscription,
   subscriptionOverview, updateMember, type LoyaltyKind, type MemberOverview, type PaymentMethod,
-} from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+} from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export function Section({ title, icon, actions, children, className }: { title: string; icon?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }) {

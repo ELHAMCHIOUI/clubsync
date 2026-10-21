@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { act } from "@/lib/act";
 import { formatDateTime, formatMAD, METHOD_LABELS, todayLocal } from "@/lib/format";
-import { paymentOverview, rpcVoidPayment, useDb, type PaymentMethod } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { paymentOverview, rpcVoidPayment, useDb, type PaymentMethod } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/payments")({

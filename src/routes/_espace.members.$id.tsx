@@ -10,8 +10,8 @@ import { ReminderButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { act } from "@/lib/act";
 import { formatDateTime } from "@/lib/format";
-import { attendanceOverview, deleteMember, memberOverview, subscriptionOverview, updateMember, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { attendanceOverview, deleteMember, memberOverview, subscriptionOverview, updateMember, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/members/$id")({

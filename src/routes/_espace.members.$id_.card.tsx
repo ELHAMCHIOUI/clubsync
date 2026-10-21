@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getCard, members, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { getCard, members, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 
 export const Route = createFileRoute("/_espace/members/$id_/card")({
   head: () => ({

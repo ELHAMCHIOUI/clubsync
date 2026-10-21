@@ -7,8 +7,8 @@ import { BalanceBadge, StatusBadge } from "@/components/status";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTime, formatDay } from "@/lib/format";
-import { memberOverview, useDb } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { memberOverview, useDb } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_espace/members/")({

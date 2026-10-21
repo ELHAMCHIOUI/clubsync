@@ -3,27 +3,9 @@ import { LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NAV_ITEMS } from "@/lib/nav";
-import { ROLE_LABELS, useOrg, type StaffRole } from "@/lib/mock-session";
+import { ROLE_LABELS, useOrg } from "@/lib/session";
 import { cn } from "@/lib/utils";
-
-function DemoRoleSwitch() {
-  const { role, setDemoRole } = useOrg();
-  return (
-    <div className="space-y-1">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Démo : rôle</p>
-      <Select value={role ?? ""} onValueChange={(v) => setDemoRole(v as StaffRole)}>
-        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          {(Object.keys(ROLE_LABELS) as StaffRole[]).map((r) => (
-            <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { org, profile, role, isAdmin, signOut } = useOrg();
@@ -52,7 +34,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="space-y-3 border-t p-4">
-          <DemoRoleSwitch />
           <div>
             <p className="truncate text-sm font-medium">{profile?.full_name}</p>
             <p className="text-xs text-muted-foreground">{role && ROLE_LABELS[role]}</p>
@@ -69,7 +50,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <p className="truncate font-display font-semibold">{org?.name}</p>
             <p className="truncate text-xs text-muted-foreground">{profile?.full_name} · {role && ROLE_LABELS[role]}</p>
           </div>
-          <div className="w-36"><DemoRoleSwitch /></div>
           <Button variant="ghost" size="icon" onClick={signOut} aria-label="Se déconnecter"><LogOut /></Button>
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto px-3 pb-2">

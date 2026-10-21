@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useOrg } from "@/lib/mock-session";
+import { useOrg } from "@/lib/session";
 import { useApplyTheme, useTheme } from "@/lib/theme";
 
 export function BrandMark({ className }: { className?: string }) {
@@ -29,7 +29,6 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
           <div className="mt-6">{children}</div>
         </div>
-        <p className="mt-4 text-center text-xs text-muted-foreground">Mode démonstration : données enregistrées dans ce navigateur uniquement.</p>
       </div>
     </div>
   );

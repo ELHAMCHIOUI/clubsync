@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { formatMAD } from "@/lib/format";
-import type { SubStatus } from "@/lib/mock-db";
+import type { SubStatus } from "@/lib/db";
 
 const MAP: Record<SubStatus, { label: string; variant: "success" | "info" | "danger" | "frozen" | "muted" }> = {
   active: { label: "Actif", variant: "success" },

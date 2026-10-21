@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { CheckCircle2, ScanLine, UserX, XCircle } from "lucide-react";
 import { StatusBadge } from "@/components/status";
 import { formatDay, formatMAD } from "@/lib/format";
-import type { CheckInResult } from "@/lib/mock-db";
+import type { CheckInResult } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
 export function ResultPanel({ result }: { result: CheckInResult | null }) {

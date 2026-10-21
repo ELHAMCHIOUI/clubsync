@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { act } from "@/lib/act";
 import { firstName, fillTemplate, formatDateTime, formatDay, formatMAD, monthLabel, shiftMonth, todayLocal, toWhatsAppNumber } from "@/lib/format";
-import { lastReminder, pickTemplate, rpcLogReminder, type SubscriptionOverview } from "@/lib/mock-db";
-import { useOrg } from "@/lib/mock-session";
+import { lastReminder, pickTemplate, rpcLogReminder, type SubscriptionOverview } from "@/lib/db";
+import { useOrg } from "@/lib/session";
 
 export function MonthPicker({ value, onChange }: { value: string; onChange: (ym: string) => void }) {
   const max = todayLocal().slice(0, 7);

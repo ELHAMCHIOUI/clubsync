@@ -6,7 +6,7 @@ import { AuthShell } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useOrg } from "@/lib/mock-session";
+import { useOrg } from "@/lib/session";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({

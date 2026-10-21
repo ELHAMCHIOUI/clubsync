@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MethodSelect } from "@/components/member/sections";
 import { act } from "@/lib/act";
 import { parseMAD, todayLocal } from "@/lib/format";
-import { EXPENSE_CATEGORIES, saveExpense, type Expense, type PaymentMethod } from "@/lib/mock-db";
+import { EXPENSE_CATEGORIES, saveExpense, type Expense, type PaymentMethod } from "@/lib/db";
 
 export function ExpenseDialog({ expense }: { expense?: Expense }) {
   const [open, setOpen] = useState(false);
