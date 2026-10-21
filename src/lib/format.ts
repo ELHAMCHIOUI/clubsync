@@ -40,3 +40,16 @@ export function addMonths(day: string, n: number): string {
 export function diffDays(a: string, b: string): number {
   return Math.round((Date.parse(a + "T12:00:00Z") - Date.parse(b + "T12:00:00Z")) / 86400000);
 }
+
+export const METHOD_LABELS = { cash: "Espèces", card: "Carte (TPE)", transfer: "Virement", cheque: "Chèque" } as const;
+
+/** « 06 12 34 56 78 » → 212612345678 ; null si invalide. */
+export function toWhatsAppNumber(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  let d = phone.replace(/[^\d+]/g, "");
+  if (d.startsWith("+")) d = d.slice(1);
+  else if (d.startsWith("00")) d = d.slice(2);
+  else if (d.startsWith("0")) d = "212" + d.slice(1);
+  return /^212[5-7]\d{8}$/.test(d) ? d : null;
+}
+export const firstName = (full: string) => full.trim().split(/\s+/)[0] ?? full;

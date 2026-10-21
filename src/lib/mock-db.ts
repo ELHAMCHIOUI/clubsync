@@ -35,12 +35,17 @@ export interface LoyaltySettings {
   renewal_bonus: number; referral_points: number; expiry_months: number;
 }
 
+export type RewardType = "guest_pass" | "discount" | "free_days" | "goodie" | "partner" | "other";
+export interface Reward { id: string; organization_id: string; name: string; description: string | null; reward_type: RewardType; points_cost: number; is_active: boolean; created_at: string }
+export interface Redemption { id: string; organization_id: string; member_id: string; reward_id: string; reward_name: string; points_cost: number; note: string | null; given_by: string | null; created_at: string }
+
 interface Data {
   seeded: string[]; members: Member[]; cards: MemberCard[]; plans: Plan[]; subscriptions: Subscription[];
   payments: Payment[]; attendance: Attendance[]; ledger: LedgerRow[]; loyalty: LoyaltySettings[];
+  rewards: Reward[]; redemptions: Redemption[];
 }
 const KEY = "nabd-demo-db";
-const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [] });
+const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [], rewards: [], redemptions: [] });
 
 let cache: Data | null = null;
 let version = 0;
@@ -197,8 +202,21 @@ export async function rpcManualCheckIn(memberId: string, reason: string): Promis
 }
 
 // ---------- Données de démonstration ----------
+function seedRewards(orgId: string) {
+  const d = data();
+  if (d.rewards.some((r) => r.organization_id === orgId)) return;
+  const list: [string, string, RewardType, number][] = [
+    ["Pass invité", "Une séance gratuite pour un ami", "guest_pass", 100],
+    ["Bouteille Nabd", "Gourde de la salle", "goodie", 200],
+    ["7 jours offerts", "Ajoutés au prochain abonnement", "free_days", 400],
+  ];
+  d.rewards.push(...list.map(([name, description, reward_type, points_cost]) => ({ id: uid(), organization_id: orgId, name, description, reward_type, points_cost, is_active: true, created_at: nowIso() })));
+  save();
+}
+
 function seed(orgId: string) {
   const d = data();
+  seedRewards(orgId);
   if (d.seeded.includes(orgId)) return;
   const today = todayLocal();
   const ago = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
@@ -249,4 +267,189 @@ export function demoCodes(orgId: string) {
   return d.cards.filter((c) => c.organization_id === orgId).map((c) => ({
     code: c.qr_token, name: d.members.find((m) => m.id === c.member_id)?.full_name ?? "—",
   }));
+}
+
+// ---------- Phase 3 : membres, abonnements, paiements, fidélité ----------
+const requireAdmin = () => { if (!isAdmin()) throw new Error("Action réservée au gérant"); };
+const own = <T extends { organization_id: string }>(rows: T[]) => rows.filter((r) => r.organization_id === me().orgId);
+
+export function plans(orgId: string) { return data().plans.filter((p) => p.organization_id === orgId); }
+export function rewards(orgId: string) { return data().rewards.filter((r) => r.organization_id === orgId); }
+export function members(orgId: string) { return data().members.filter((m) => m.organization_id === orgId); }
+export function memberLedger(memberId: string) {
+  return data().ledger.filter((l) => l.member_id === memberId).sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export interface PaymentOverview extends Payment { member_name: string; plan_name: string; paid_local: string; paid_on: string }
+export function paymentOverview(orgId: string): PaymentOverview[] {
+  const d = data();
+  return d.payments.filter((p) => p.organization_id === orgId).map((p) => {
+    const s = d.subscriptions.find((x) => x.id === p.subscription_id);
+    return {
+      ...p, member_name: d.members.find((m) => m.id === p.member_id)?.full_name ?? "—",
+      plan_name: d.plans.find((x) => x.id === s?.plan_id)?.name ?? "—", paid_local: p.paid_at, paid_on: localDayOf(p.paid_at),
+    };
+  }).sort((a, b) => b.paid_at.localeCompare(a.paid_at));
+}
+
+export async function insertMember(input: { full_name: string; phone: string | null; email: string | null; notes: string | null; whatsapp_opt_in: boolean; referred_by: string | null }) {
+  const a = me();
+  if (input.full_name.trim().length < 2) throw new Error("Le nom complet est obligatoire");
+  const m: Member = { ...input, full_name: input.full_name.trim(), id: uid(), organization_id: a.orgId, photo_path: null, archived_at: null, created_by: a.userId, created_at: nowIso() };
+  const d = data();
+  d.members.push(m);
+  d.cards.push({ member_id: m.id, organization_id: a.orgId, qr_token: token(), link_token: token() + token(), issued_at: nowIso(), regenerated_at: null });
+  save();
+  return m;
+}
+export async function updateMember(id: string, patch: Partial<Pick<Member, "full_name" | "phone" | "email" | "notes" | "whatsapp_opt_in" | "photo_path" | "archived_at" | "referred_by">>) {
+  const m = own(data().members).find((x) => x.id === id);
+  if (!m) throw new Error("Membre introuvable");
+  if (patch.full_name !== undefined && patch.full_name.trim().length < 2) throw new Error("Le nom complet est obligatoire");
+  Object.assign(m, patch);
+  save();
+}
+export async function deleteMember(id: string) {
+  if (me().role !== "owner") throw new Error("Seul le propriétaire peut supprimer un membre");
+  const d = data();
+  if (d.subscriptions.some((s) => s.member_id === id)) throw new Error("Ce membre a des abonnements : archivez-le");
+  d.members = d.members.filter((m) => m.id !== id);
+  d.cards = d.cards.filter((c) => c.member_id !== id);
+  d.attendance = d.attendance.filter((x) => x.member_id !== id);
+  d.ledger = d.ledger.filter((x) => x.member_id !== id);
+  save();
+}
+export async function rpcRegenerateCard(memberId: string) {
+  requireAdmin();
+  const c = data().cards.find((x) => x.member_id === memberId);
+  if (!c) throw new Error("Carte introuvable");
+  c.qr_token = token(); c.link_token = token() + token(); c.regenerated_at = nowIso();
+  save();
+}
+
+function addLedger(memberId: string, kind: LoyaltyKind, points: number, note: string | null) {
+  if (!points) return;
+  data().ledger.push({ id: uid(), organization_id: me().orgId, member_id: memberId, kind, points, note, created_at: nowIso() });
+}
+function pushPayment(sub: Subscription, cents: number, method: PaymentMethod, reference: string | null, note: string | null) {
+  const a = me();
+  const p: Payment = {
+    id: uid(), organization_id: a.orgId, subscription_id: sub.id, member_id: sub.member_id, amount_cents: cents, method,
+    paid_at: nowIso(), reference: reference || null, note: note || null, received_by: a.userId, received_by_name: a.name, voided_at: null, void_reason: null,
+  };
+  data().payments.push(p);
+  return p.id;
+}
+
+export async function rpcCreateSubscription(i: { member: string; plan: string; start: string; discountCents: number; firstPaymentCents: number; method: PaymentMethod; reference: string | null }, maxReceptionDiscountPct: number) {
+  const a = me(); const d = data();
+  const m = own(d.members).find((x) => x.id === i.member);
+  if (!m) throw new Error("Membre introuvable");
+  if (m.archived_at) throw new Error("Ce membre est archivé : réactivez-le d'abord");
+  const p = own(d.plans).find((x) => x.id === i.plan && x.is_active);
+  if (!p) throw new Error("Formule introuvable ou désactivée");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(i.start)) throw new Error("Date de début invalide");
+  if (i.discountCents < 0 || i.discountCents > p.price_cents) throw new Error("Remise invalide");
+  if (a.role === "receptionist" && i.discountCents > Math.round((p.price_cents * maxReceptionDiscountPct) / 100))
+    throw new Error(`La remise dépasse le maximum autorisé pour la réception (${maxReceptionDiscountPct} %)`);
+  const due = p.price_cents - i.discountCents;
+  if (i.firstPaymentCents < 0 || i.firstPaymentCents > due) throw new Error("Le premier paiement dépasse le montant dû");
+  const previous = d.subscriptions.filter((s) => s.member_id === m.id && s.state !== "cancelled");
+  const today = todayLocal();
+  const renewing = previous.some((s) => subStatus(s, today) === "active" && s.end_date >= addDays(i.start, -1));
+  const s: Subscription = {
+    id: uid(), organization_id: a.orgId, member_id: m.id, plan_id: p.id, start_date: i.start,
+    end_date: addDays(addMonths(i.start, p.duration_months), -1), state: "active", frozen_from: null,
+    amount_due_cents: due, discount_cents: i.discountCents, created_at: nowIso(),
+  };
+  d.subscriptions.push(s);
+  if (i.firstPaymentCents > 0) pushPayment(s, i.firstPaymentCents, i.method, i.reference, null);
+  const ls = loyaltySettings(a.orgId);
+  if (ls?.enabled) {
+    if (previous.length === 0) {
+      addLedger(m.id, "welcome", ls.welcome_points, null);
+      if (m.referred_by) addLedger(m.referred_by, "referral", ls.referral_points, `Parrainage de ${m.full_name}`);
+    }
+    addLedger(m.id, "subscription", ls.points_per_month * p.duration_months, p.name);
+    if (renewing) addLedger(m.id, "renewal", ls.renewal_bonus, null);
+  }
+  save();
+  return s.id;
+}
+export async function rpcSetSubscriptionState(subId: string, action: "freeze" | "unfreeze" | "cancel") {
+  const s = own(data().subscriptions).find((x) => x.id === subId);
+  if (!s) throw new Error("Abonnement introuvable");
+  const today = todayLocal();
+  if (action === "cancel") {
+    requireAdmin();
+    if (s.state === "cancelled") throw new Error("Abonnement déjà annulé");
+    s.state = "cancelled";
+  } else if (action === "freeze") {
+    if (subStatus(s, today) !== "active") throw new Error("Seul un abonnement actif peut être gelé");
+    s.state = "frozen"; s.frozen_from = today;
+  } else {
+    if (s.state !== "frozen" || !s.frozen_from) throw new Error("Cet abonnement n'est pas gelé");
+    s.end_date = addDays(s.end_date, Math.max(0, diffDays(today, s.frozen_from)));
+    s.state = "active"; s.frozen_from = null;
+  }
+  save();
+}
+export async function rpcUpdateSubscription(subId: string, start: string, end: string, amountDueCents: number) {
+  requireAdmin();
+  const s = own(data().subscriptions).find((x) => x.id === subId);
+  if (!s) throw new Error("Abonnement introuvable");
+  if (end < start) throw new Error("La date de fin doit être après la date de début");
+  if (amountDueCents < 0) throw new Error("Montant invalide");
+  Object.assign(s, { start_date: start, end_date: end, amount_due_cents: amountDueCents });
+  save();
+}
+export async function rpcRecordPayment(subId: string, cents: number, method: PaymentMethod, reference: string | null, note: string | null) {
+  const so = subscriptionOverview(me().orgId).find((x) => x.id === subId);
+  if (!so) throw new Error("Abonnement introuvable");
+  if (so.state === "cancelled") throw new Error("Abonnement annulé : encaissement impossible");
+  if (cents <= 0) throw new Error("Le montant doit être supérieur à zéro");
+  if (cents > so.balance_cents) throw new Error("Le montant dépasse le reste à payer");
+  const id = pushPayment(data().subscriptions.find((x) => x.id === subId)!, cents, method, reference, note);
+  save();
+  return id;
+}
+export async function rpcRedeemReward(memberId: string, rewardId: string, note: string | null) {
+  const a = me(); const d = data();
+  const r = own(d.rewards).find((x) => x.id === rewardId && x.is_active);
+  if (!r) throw new Error("Récompense introuvable ou désactivée");
+  if (memberPoints(memberId) < r.points_cost) throw new Error("Points insuffisants pour cette récompense");
+  const red: Redemption = { id: uid(), organization_id: a.orgId, member_id: memberId, reward_id: r.id, reward_name: r.name, points_cost: r.points_cost, note, given_by: a.userId, created_at: nowIso() };
+  d.redemptions.push(red);
+  addLedger(memberId, "redemption", -r.points_cost, r.name);
+  save();
+  return red.id;
+}
+export async function rpcAdjustPoints(memberId: string, points: number, note: string) {
+  requireAdmin();
+  if (!Number.isInteger(points) || points === 0) throw new Error("Nombre de points invalide");
+  if (note.trim().length < 3) throw new Error("Le motif est obligatoire");
+  if (memberPoints(memberId) + points < 0) throw new Error("Le solde de points ne peut pas devenir négatif");
+  addLedger(memberId, "adjustment", points, note.trim());
+  save();
+}
+
+export interface PublicCard {
+  gym_name: string; gym_phone: string | null; member_name: string; qr_token: string; plan_name: string | null;
+  end_date: string | null; status: SubStatus | null; points: number; loyalty_enabled: boolean;
+  rewards: { name: string; description: string | null; points_cost: number }[];
+}
+/** Équivalent de get_public_card : accessible sans connexion. */
+export async function rpcGetPublicCard(linkToken: string, orgLookup: (id: string) => { name: string; phone: string | null } | undefined): Promise<PublicCard | null> {
+  const d = data();
+  const c = d.cards.find((x) => x.link_token === linkToken);
+  if (!c) return null;
+  const m = memberOverview(c.organization_id).find((x) => x.id === c.member_id);
+  if (!m || m.archived_at) return null;
+  const o = orgLookup(c.organization_id);
+  return {
+    gym_name: o?.name ?? "Salle", gym_phone: o?.phone ?? null, member_name: m.full_name, qr_token: c.qr_token,
+    plan_name: m.plan_name, end_date: m.end_date, status: m.subscription_status, points: m.points,
+    loyalty_enabled: loyaltySettings(c.organization_id)?.enabled ?? false,
+    rewards: d.rewards.filter((r) => r.organization_id === c.organization_id && r.is_active).map((r) => ({ name: r.name, description: r.description, points_cost: r.points_cost })),
+  };
 }
