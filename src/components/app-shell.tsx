@@ -13,7 +13,7 @@ function DemoRoleSwitch() {
   return (
     <div className="space-y-1">
       <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Démo : rôle</p>
-      <Select value={role ?? undefined} onValueChange={(v) => setDemoRole(v as StaffRole)}>
+      <Select value={role ?? ""} onValueChange={(v) => setDemoRole(v as StaffRole)}>
         <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
         <SelectContent>
           {(Object.keys(ROLE_LABELS) as StaffRole[]).map((r) => (

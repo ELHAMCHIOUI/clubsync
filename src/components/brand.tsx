@@ -8,7 +8,7 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-export function AuthShell({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+export function AuthShell({ title, subtitle, children }: { title: string; subtitle?: string | undefined; children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">

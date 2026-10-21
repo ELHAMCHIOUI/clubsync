@@ -4,7 +4,7 @@ import { ComingSoon } from "@/components/page";
 
 export const Route = createFileRoute("/_espace/admin")({
   validateSearch: (s: Record<string, unknown>): { welcome?: number } =>
-    s.welcome ? { welcome: Number(s.welcome) } : {},
+    s["welcome"] ? { welcome: Number(s["welcome"]) } : {},
   head: () => ({
     meta: [
       { title: "Administration — Nabd" },
