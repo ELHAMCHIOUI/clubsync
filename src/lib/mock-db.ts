@@ -44,13 +44,16 @@ interface Data {
   payments: Payment[]; attendance: Attendance[]; ledger: LedgerRow[]; loyalty: LoyaltySettings[];
   rewards: Reward[]; redemptions: Redemption[];
   invoices: Invoice[]; invoiceSeq: Record<string, number>; templates: ReminderTemplate[]; reminderLogs: ReminderLog[];
+  cashClosings: CashClosing[]; expenses: Expense[];
 }
+export interface CashClosing { id: string; organization_id: string; day: string; expected_cents: number; counted_cents: number; difference_cents: number; note: string | null; closed_by: string | null; closed_by_name: string | null; closed_at: string; validated_by: string | null; validated_at: string | null }
+export interface Expense { id: string; organization_id: string; category: string; label: string; amount_cents: number; method: PaymentMethod; spent_on: string; created_by: string | null; created_at: string }
 export interface Invoice { id: string; organization_id: string; member_id: string; subscription_id: string; number: number; issued_on: string; total_cents: number; vat_rate: number; created_by: string | null; created_at: string }
 export type ReminderKind = "expiry" | "unpaid";
 export interface ReminderTemplate { id: string; organization_id: string; kind: ReminderKind; offset_days: number; template: string; is_active: boolean }
 export interface ReminderLog { id: string; organization_id: string; member_id: string; subscription_id: string; kind: ReminderKind; sent_by: string | null; sent_at: string }
 const KEY = "nabd-demo-db";
-const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [], rewards: [], redemptions: [], invoices: [], invoiceSeq: {}, templates: [], reminderLogs: [] });
+const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [], rewards: [], redemptions: [], invoices: [], invoiceSeq: {}, templates: [], reminderLogs: [], cashClosings: [], expenses: [] });
 
 let cache: Data | null = null;
 let version = 0;
@@ -223,6 +226,7 @@ function seed(orgId: string) {
   const d = data();
   seedRewards(orgId);
   seedTemplates(orgId);
+  seedExpenses(orgId);
   if (d.seeded.includes(orgId)) return;
   const today = todayLocal();
   const ago = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
@@ -509,4 +513,98 @@ export async function rpcCreateInvoice(subId: string, vatRate: number) {
   d.invoices.push(inv);
   save();
   return inv.id;
+}
+
+// ---------- Phase 5 : tableau de bord, fidélité, caisse ----------
+export const EXPENSE_CATEGORIES = ["Loyer", "Salaires", "Électricité", "Eau", "Internet & téléphone", "Matériel", "Entretien & ménage", "Marketing", "Impôts & taxes", "Autre"] as const;
+
+function seedExpenses(orgId: string) {
+  const d = data();
+  if (d.expenses.some((e) => e.organization_id === orgId)) return;
+  const today = todayLocal();
+  for (let i = 0; i < 6; i++) {
+    const day = addMonths(today.slice(0, 7) + "-05", -i);
+    const add = (category: string, label: string, cents: number, method: PaymentMethod) =>
+      d.expenses.push({ id: uid(), organization_id: orgId, category, label, amount_cents: cents, method, spent_on: day, created_by: null, created_at: nowIso() });
+    add("Loyer", "Loyer du local", 800000, "transfer");
+    add("Salaires", "Coach et réception", 900000, "transfer");
+    add("Électricité", "Facture ONEE", 120000 + i * 7000, "cash");
+  }
+  // Recettes d'exemple sur 6 mois pour les graphiques
+  const ex = d.members.filter((m) => m.organization_id === orgId);
+  void ex;
+  save();
+}
+
+export function revenueByMonth(orgId: string) {
+  const out = new Map<string, Record<PaymentMethod, number>>();
+  for (const p of paymentOverview(orgId)) {
+    if (p.voided_at) continue;
+    const k = p.paid_on.slice(0, 7);
+    const row = out.get(k) ?? { cash: 0, card: 0, transfer: 0, cheque: 0 };
+    row[p.method] += p.amount_cents;
+    out.set(k, row);
+  }
+  return out;
+}
+export function expenses(orgId: string) { return data().expenses.filter((e) => e.organization_id === orgId).sort((a, b) => b.spent_on.localeCompare(a.spent_on)); }
+export function monthTotals(orgId: string, ym: string) {
+  const rev = paymentOverview(orgId).filter((p) => !p.voided_at && p.paid_on.startsWith(ym));
+  const exp = expenses(orgId).filter((e) => e.spent_on.startsWith(ym));
+  return { revenue: rev.reduce((a, p) => a + p.amount_cents, 0), expenses: exp.reduce((a, e) => a + e.amount_cents, 0) };
+}
+
+export function redemptions(orgId: string) {
+  const d = data();
+  return d.redemptions.filter((r) => r.organization_id === orgId).sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .map((r) => ({ ...r, member_name: d.members.find((m) => m.id === r.member_id)?.full_name ?? "—" }));
+}
+export function ledgerOverview(orgId: string) {
+  const d = data();
+  return d.ledger.filter((l) => l.organization_id === orgId).sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .map((l) => ({ ...l, member_name: d.members.find((m) => m.id === l.member_id)?.full_name ?? "—" }));
+}
+export async function updateLoyaltySettings(orgId: string, patch: Partial<Omit<LoyaltySettings, "organization_id">>) {
+  requireAdmin();
+  for (const [k, v] of Object.entries(patch)) if (typeof v === "number" && (!Number.isInteger(v) || v < 0)) throw new Error(`Valeur invalide pour ${k}`);
+  const ls = data().loyalty.find((l) => l.organization_id === orgId);
+  if (!ls) throw new Error("Réglages introuvables");
+  Object.assign(ls, patch);
+  save();
+}
+export async function insertReward(r: { name: string; description: string | null; reward_type: RewardType; points_cost: number }) {
+  requireAdmin();
+  if (r.name.trim().length < 2) throw new Error("Le nom de la récompense est obligatoire");
+  if (!Number.isInteger(r.points_cost) || r.points_cost <= 0) throw new Error("Le coût en points doit être supérieur à zéro");
+  data().rewards.push({ ...r, name: r.name.trim(), id: uid(), organization_id: me().orgId, is_active: true, created_at: nowIso() });
+  save();
+}
+export async function setRewardActive(id: string, active: boolean) {
+  requireAdmin();
+  const r = own(data().rewards).find((x) => x.id === id);
+  if (!r) throw new Error("Récompense introuvable");
+  r.is_active = active; save();
+}
+
+export function cashClosings(orgId: string) { return data().cashClosings.filter((c) => c.organization_id === orgId).sort((a, b) => b.day.localeCompare(a.day)).slice(0, 60); }
+function expectedCash(orgId: string, day: string) {
+  return paymentOverview(orgId).filter((p) => !p.voided_at && p.method === "cash" && p.paid_on === day).reduce((a, p) => a + p.amount_cents, 0);
+}
+export async function rpcCashExpected(orgId: string, day: string) { requireAdmin(); return expectedCash(orgId, day); }
+export async function rpcCloseCash(orgId: string, day: string, countedCents: number, note: string | null) {
+  const a = me();
+  if (day > todayLocal()) throw new Error("Impossible de clôturer un jour futur");
+  if (!Number.isInteger(countedCents) || countedCents < 0) throw new Error("Montant compté invalide");
+  const d = data();
+  if (d.cashClosings.some((c) => c.organization_id === orgId && c.day === day)) throw new Error("Cette journée est déjà clôturée");
+  const expected = expectedCash(orgId, day);
+  d.cashClosings.push({ id: uid(), organization_id: orgId, day, expected_cents: expected, counted_cents: countedCents, difference_cents: countedCents - expected, note, closed_by: a.userId, closed_by_name: a.name, closed_at: nowIso(), validated_by: null, validated_at: null });
+  save();
+  return { expected_cents: expected, counted_cents: countedCents, difference_cents: countedCents - expected };
+}
+export async function rpcValidateCashClosing(id: string) {
+  requireAdmin();
+  const c = own(data().cashClosings).find((x) => x.id === id);
+  if (!c) throw new Error("Clôture introuvable");
+  c.validated_by = me().userId; c.validated_at = nowIso(); save();
 }
