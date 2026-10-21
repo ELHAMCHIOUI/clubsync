@@ -261,8 +261,8 @@ function seed(orgId: string) {
     };
     d.subscriptions.push(s);
     if (p.paid) d.payments.push({
-      id: uid(), organization_id: orgId, subscription_id: s.id, member_id: m.id, amount_cents: p.paid, method: "cash",
-      paid_at: m.created_at, reference: null, note: null, received_by: null, received_by_name: "Démo", voided_at: null, void_reason: null,
+      id: uid(), organization_id: orgId, subscription_id: s.id, member_id: m.id, amount_cents: p.paid, method: i % 3 === 1 ? "card" : "cash",
+      paid_at: start > today ? nowIso() : start + "T10:00:00.000Z", reference: null, note: null, received_by: null, received_by_name: "Démo", voided_at: null, void_reason: null,
     });
     d.ledger.push({ id: uid(), organization_id: orgId, member_id: m.id, kind: "welcome", points: 50, note: null, created_at: m.created_at });
     if (i < 3) d.attendance.push({ id: uid(), organization_id: orgId, member_id: m.id, result: "accepted", reason: null, method: "qr", created_at: ago(1 + i), scanned_by_name: "Démo" });
@@ -530,9 +530,6 @@ function seedExpenses(orgId: string) {
     add("Salaires", "Coach et réception", 900000, "transfer");
     add("Électricité", "Facture ONEE", 120000 + i * 7000, "cash");
   }
-  // Recettes d'exemple sur 6 mois pour les graphiques
-  const ex = d.members.filter((m) => m.organization_id === orgId);
-  void ex;
   save();
 }
 
