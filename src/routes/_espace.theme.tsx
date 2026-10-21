@@ -36,8 +36,8 @@ function ThemePage() {
 
   const onLogo = (file: File | undefined) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) return toast.error("Choisissez une image.");
-    if (file.size > 500_000) return toast.error("Image trop lourde (500 Ko max).");
+    if (!file.type.startsWith("image/")) { toast.error("Choisissez une image."); return; }
+    if (file.size > 500_000) { toast.error("Image trop lourde (500 Ko max)."); return; }
     const reader = new FileReader();
     reader.onload = () => apply({ logo: String(reader.result) });
     reader.readAsDataURL(file);
