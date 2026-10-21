@@ -123,6 +123,9 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       if (role !== "owner") throw new Error("Seul le propriétaire peut modifier la salle");
       if (patch.name !== undefined && patch.name.trim().length < 2) throw new Error("Le nom de la salle est trop court");
       if (patch.invoice_prefix !== undefined && !/^[A-Za-z0-9]{1,10}$/.test(patch.invoice_prefix)) throw new Error("Le préfixe de facture ne doit contenir que des lettres et des chiffres");
+      if (patch.vat_rate !== undefined && (!Number.isFinite(patch.vat_rate) || patch.vat_rate < 0 || patch.vat_rate > 100)) throw new Error("TVA invalide");
+      if (patch.max_reception_discount_pct !== undefined && (!Number.isInteger(patch.max_reception_discount_pct) || patch.max_reception_discount_pct < 0 || patch.max_reception_discount_pct > 100)) throw new Error("Remise maximale invalide");
+      if (patch.anti_passback_minutes !== undefined && (!Number.isInteger(patch.anti_passback_minutes) || patch.anti_passback_minutes < 0)) throw new Error("Délai anti-passback invalide");
       const s = load();
       commit({ ...s, orgs: s.orgs.map((o) => (o.id === org?.id ? { ...o, ...patch } : o)) });
     },
@@ -146,7 +149,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     async cancelInvitation(id) {
       requireAdmin();
       const s = load();
-      commit({ ...s, invitations: s.invitations.filter((i) => i.id !== id) });
+      commit({ ...s, invitations: s.invitations.filter((i) => i.id !== id || i.organization_id !== org?.id) });
     },
     async removeStaff(userId) {
       requireAdmin();

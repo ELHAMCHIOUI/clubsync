@@ -610,7 +610,7 @@ export async function rpcValidateCashClosing(id: string) {
 export async function savePlan(id: string | null, input: Pick<Plan, "name" | "duration_months" | "price_cents">) {
   requireAdmin();
   if (input.name.trim().length < 2) throw new Error("Le nom de la formule est obligatoire");
-  if (!Number.isInteger(input.duration_months) || input.duration_months <= 0) throw new Error("Durée invalide");
+  if (!Number.isInteger(input.duration_months) || input.duration_months < 1 || input.duration_months > 36) throw new Error("La durée doit être comprise entre 1 et 36 mois");
   if (!Number.isSafeInteger(input.price_cents) || input.price_cents < 0) throw new Error("Prix invalide");
   const values = { ...input, name: input.name.trim() };
   if (id) {
@@ -664,5 +664,6 @@ export function accountingSummary(orgId: string, ym: string) {
   const byCategory = EXPENSE_CATEGORIES.map((category) => ({ category, total: charges.filter((e) => e.category === category).reduce((s, e) => s + e.amount_cents, 0) })).filter((e) => e.total > 0);
   const revenue = payments.reduce((s, p) => s + p.amount_cents, 0);
   const totalExpenses = charges.reduce((s, e) => s + e.amount_cents, 0);
-  return { revenue, expenses: totalExpenses, net: revenue - totalExpenses, byMethod, byCategory, payments, charges };
+  const billed = invoices(orgId).filter((i) => i.issued_on.startsWith(ym)).reduce((s, i) => s + i.total_cents, 0);
+  return { revenue, expenses: totalExpenses, net: revenue - totalExpenses, billed, byMethod, byCategory, payments, charges };
 }
