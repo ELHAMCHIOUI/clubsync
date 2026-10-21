@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background lg:flex">
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r bg-sidebar lg:flex">
+      <aside className="print:hidden sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r bg-sidebar lg:flex">
         <div className="flex items-center gap-3 border-b px-5 py-4">
           <BrandMark />
           <div className="min-w-0">
@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Tablet / mobile header */}
-      <header className="sticky top-0 z-20 border-b bg-card lg:hidden">
+      <header className="print:hidden sticky top-0 z-20 border-b bg-card lg:hidden">
         <div className="flex items-center gap-3 px-4 py-3">
           <BrandMark className="size-9 text-lg" />
           <div className="min-w-0 flex-1">
@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </header>
 
-      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 print:p-0">{children}</main>
     </div>
   );
 }

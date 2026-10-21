@@ -36,7 +36,7 @@ export function ResultPanel({ result }: { result: CheckInResult | null }) {
             </div>
           )}
           <div className="min-w-0 flex-1 space-y-2">
-            <Link to="/members" className="block font-display text-2xl font-semibold hover:underline">{m.full_name}</Link>
+            <Link to="/members/$id" params={{ id: m.id }} className="block font-display text-2xl font-semibold hover:underline">{m.full_name}</Link>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <StatusBadge status={m.status} />
               <span className="text-muted-foreground">{m.plan_name ?? "Aucune formule"}</span>
