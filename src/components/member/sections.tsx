@@ -40,7 +40,7 @@ export function Section({ title, icon, actions, children, className }: { title: 
 }
 const Empty = ({ children }: { children: ReactNode }) => <p className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">{children}</p>;
 
-function MethodSelect({ value, onChange }: { value: PaymentMethod; onChange: (m: PaymentMethod) => void }) {
+export function MethodSelect({ value, onChange }: { value: PaymentMethod; onChange: (m: PaymentMethod) => void }) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as PaymentMethod)}>
       <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
@@ -182,9 +182,9 @@ function CorrectDialog({ sub }: { sub: { id: string; start_date: string; end_dat
 }
 
 // ---------- Encaisser ----------
-export function PaymentSection({ memberId }: { memberId: string }) {
+export function PaymentSection({ memberId }: { memberId?: string }) {
   const { org } = useOrg();
-  const open = org ? subscriptionOverview(org.id).filter((s) => s.member_id === memberId && s.status !== "cancelled" && s.balance_cents > 0) : [];
+  const open = org ? subscriptionOverview(org.id).filter((s) => (!memberId || s.member_id === memberId) && s.status !== "cancelled" && s.balance_cents > 0) : [];
   const [subId, setSubId] = useState<string>("");
   const cur = open.find((s) => s.id === subId) ?? open[0];
   const [amount, setAmount] = useState("");
@@ -192,7 +192,7 @@ export function PaymentSection({ memberId }: { memberId: string }) {
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
-  if (open.length === 0) return null;
+  if (open.length === 0) return memberId ? null : <Section title="Encaisser"><Empty>Aucun abonnement avec un reste à payer.</Empty></Section>;
   const shown = amount || String(cur!.balance_cents / 100).replace(".", ",");
   return (
     <Section title="Encaisser">
@@ -201,7 +201,7 @@ export function PaymentSection({ memberId }: { memberId: string }) {
           <Label>Abonnement</Label>
           <Select value={cur!.id} onValueChange={(v) => { setSubId(v); setAmount(""); }}>
             <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-            <SelectContent>{open.map((s) => <SelectItem key={s.id} value={s.id}>{s.plan_name} — reste {formatMAD(s.balance_cents)}</SelectItem>)}</SelectContent>
+            <SelectContent>{open.map((s) => <SelectItem key={s.id} value={s.id}>{!memberId && `${s.member_name} · `}{s.plan_name} — reste {formatMAD(s.balance_cents)}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div className="space-y-2"><Label>Montant (MAD)</Label><Input inputMode="decimal" className="h-11" value={shown} onChange={(e) => setAmount(e.target.value)} /></div>

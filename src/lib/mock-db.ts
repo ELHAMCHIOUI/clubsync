@@ -43,9 +43,14 @@ interface Data {
   seeded: string[]; members: Member[]; cards: MemberCard[]; plans: Plan[]; subscriptions: Subscription[];
   payments: Payment[]; attendance: Attendance[]; ledger: LedgerRow[]; loyalty: LoyaltySettings[];
   rewards: Reward[]; redemptions: Redemption[];
+  invoices: Invoice[]; invoiceSeq: Record<string, number>; templates: ReminderTemplate[]; reminderLogs: ReminderLog[];
 }
+export interface Invoice { id: string; organization_id: string; member_id: string; subscription_id: string; number: number; issued_on: string; total_cents: number; vat_rate: number; created_by: string | null; created_at: string }
+export type ReminderKind = "expiry" | "unpaid";
+export interface ReminderTemplate { id: string; organization_id: string; kind: ReminderKind; offset_days: number; template: string; is_active: boolean }
+export interface ReminderLog { id: string; organization_id: string; member_id: string; subscription_id: string; kind: ReminderKind; sent_by: string | null; sent_at: string }
 const KEY = "nabd-demo-db";
-const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [], rewards: [], redemptions: [] });
+const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [], rewards: [], redemptions: [], invoices: [], invoiceSeq: {}, templates: [], reminderLogs: [] });
 
 let cache: Data | null = null;
 let version = 0;
@@ -217,6 +222,7 @@ function seedRewards(orgId: string) {
 function seed(orgId: string) {
   const d = data();
   seedRewards(orgId);
+  seedTemplates(orgId);
   if (d.seeded.includes(orgId)) return;
   const today = todayLocal();
   const ago = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
@@ -452,4 +458,55 @@ export async function rpcGetPublicCard(linkToken: string, orgLookup: (id: string
     loyalty_enabled: loyaltySettings(c.organization_id)?.enabled ?? false,
     rewards: d.rewards.filter((r) => r.organization_id === c.organization_id && r.is_active).map((r) => ({ name: r.name, description: r.description, points_cost: r.points_cost })),
   };
+}
+
+// ---------- Phase 4 : paiements, factures, relances ----------
+function seedTemplates(orgId: string) {
+  const d = data();
+  if (d.templates.some((t) => t.organization_id === orgId)) return;
+  const list: [ReminderKind, number, string][] = [
+    ["expiry", -3, "Bonjour {{prenom}}, votre abonnement chez {{salle}} se termine le {{date_fin}}. Pensez à le renouveler à l'accueil !"],
+    ["expiry", 3, "Bonjour {{prenom}}, votre abonnement chez {{salle}} a expiré le {{date_fin}}. On vous attend pour le renouveler !"],
+    ["unpaid", 0, "Bonjour {{prenom}}, il reste {{reste}} à régler pour votre abonnement chez {{salle}}. Merci de passer à l'accueil."],
+  ];
+  d.templates.push(...list.map(([kind, offset_days, template]) => ({ id: uid(), organization_id: orgId, kind, offset_days, template, is_active: true })));
+  save();
+}
+export function reminderTemplates(orgId: string) { return data().templates.filter((t) => t.organization_id === orgId); }
+export function lastReminder(subId: string) {
+  return data().reminderLogs.filter((r) => r.subscription_id === subId).map((r) => r.sent_at).sort().pop() ?? null;
+}
+export function pickTemplate(orgId: string, kind: ReminderKind, daysLeft: number) {
+  const t = reminderTemplates(orgId).filter((x) => x.kind === kind && x.is_active);
+  if (kind === "unpaid") return t[0] ?? null;
+  return (daysLeft < 0 ? t.find((x) => x.offset_days > 0) : t.find((x) => x.offset_days <= 0)) ?? null;
+}
+export async function rpcLogReminder(subId: string, kind: ReminderKind) {
+  const s = own(data().subscriptions).find((x) => x.id === subId);
+  if (!s) throw new Error("Abonnement introuvable");
+  data().reminderLogs.push({ id: uid(), organization_id: s.organization_id, member_id: s.member_id, subscription_id: s.id, kind, sent_by: me().userId, sent_at: nowIso() });
+  save();
+}
+export async function rpcVoidPayment(paymentId: string, reason: string) {
+  requireAdmin();
+  if (reason.trim().length < 3) throw new Error("Le motif d'annulation est obligatoire");
+  const p = own(data().payments).find((x) => x.id === paymentId);
+  if (!p) throw new Error("Paiement introuvable");
+  if (p.voided_at) throw new Error("Ce paiement est déjà annulé");
+  p.voided_at = nowIso(); p.void_reason = reason.trim();
+  save();
+}
+export function invoices(orgId: string) { return data().invoices.filter((i) => i.organization_id === orgId).sort((a, b) => b.created_at.localeCompare(a.created_at)); }
+export async function rpcCreateInvoice(subId: string, vatRate: number) {
+  const a = me(); const d = data();
+  const s = own(d.subscriptions).find((x) => x.id === subId);
+  if (!s) throw new Error("Abonnement introuvable");
+  if (s.state === "cancelled") throw new Error("Impossible de facturer un abonnement annulé");
+  if (d.invoices.some((i) => i.subscription_id === subId)) throw new Error("Cet abonnement a déjà une facture");
+  const n = (d.invoiceSeq[a.orgId] ?? 0) + 1;
+  d.invoiceSeq[a.orgId] = n;
+  const inv: Invoice = { id: uid(), organization_id: a.orgId, member_id: s.member_id, subscription_id: s.id, number: n, issued_on: todayLocal(), total_cents: s.amount_due_cents, vat_rate: vatRate, created_by: a.userId, created_at: nowIso() };
+  d.invoices.push(inv);
+  save();
+  return inv.id;
 }

@@ -2,7 +2,7 @@
 - [x] Phase 1 : connexion, inscription, salle, menu
 - [x] Phase 2 : accueil / scan, recherche, passages
 - [x] Phase 3 : membres, fiche, carte imprimable, carte publique
-- [ ] Phase 4 : abonnements, paiements, factures
+- [x] Phase 4 : abonnements, paiements, factures, relances WhatsApp
 - [ ] Phase 5 : tableau de bord, fidélité, caisse
 - [ ] Phase 6 : administration, charges, comptabilité
 - [ ] Brancher la vraie base (bloqué : base externe non reliée)
