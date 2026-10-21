@@ -11,3 +11,9 @@ describe("numéros WhatsApp", () => {
   it("00212… → 212…", () => expect(toWhatsAppNumber("00212612345678")).toBe("212612345678"));
   it("refuse un numéro invalide", () => expect(toWhatsAppNumber("1234")).toBeNull());
 });
+
+import { invoiceNumber, totalHT } from "@/lib/format";
+describe("factures", () => {
+  it("numéro F-2026-0001", () => expect(invoiceNumber("F", "2026-10-21", 1)).toBe("F-2026-0001"));
+  it("HT de 300 MAD TTC à 20 % = 250 MAD", () => expect(totalHT(30000, 20)).toBe(25000));
+});

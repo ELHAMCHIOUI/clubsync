@@ -53,3 +53,15 @@ export function toWhatsAppNumber(phone: string | null | undefined): string | nul
   return /^212[5-7]\d{8}$/.test(d) ? d : null;
 }
 export const firstName = (full: string) => full.trim().split(/\s+/)[0] ?? full;
+
+export function invoiceNumber(prefix: string, issuedOn: string, n: number) {
+  return `${prefix}-${issuedOn.slice(0, 4)}-${String(n).padStart(4, "0")}`;
+}
+/** Total HT = round(TTC / (1 + tva/100)) */
+export function totalHT(ttcCents: number, vatRate: number) { return Math.round(ttcCents / (1 + vatRate / 100)); }
+export function fillTemplate(t: string, v: { prenom: string; salle: string; date_fin: string; reste: string }) {
+  return t.replace(/\{\{(prenom|salle|date_fin|reste)\}\}/g, (_, k: keyof typeof v) => v[k]);
+}
+export const monthLabel = (ym: string) =>
+  new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(ym + "-15T12:00:00Z"));
+export const shiftMonth = (ym: string, n: number) => addMonths(ym + "-01", n).slice(0, 7);
