@@ -1,0 +1,252 @@
+// Base SIMULÉE (localStorage) qui reproduit les tables, vues et fonctions rpc de la vraie base.
+// Les pages n'utilisent que les fonctions exportées ici : à remplacer par supabase.from(...)/rpc(...).
+import { useSyncExternalStore } from "react";
+import { addDays, addMonths, diffDays, todayLocal } from "./format";
+import type { StaffRole } from "./mock-session";
+
+export type SubState = "active" | "frozen" | "cancelled";
+export type SubStatus = "active" | "upcoming" | "expired" | "frozen" | "cancelled";
+export type PaymentMethod = "cash" | "transfer" | "card" | "cheque";
+export type LoyaltyKind = "welcome" | "visit" | "subscription" | "renewal" | "referral" | "redemption" | "adjustment" | "expiration";
+
+export interface Member {
+  id: string; organization_id: string; full_name: string; phone: string | null; email: string | null; notes: string | null;
+  whatsapp_opt_in: boolean; photo_path: string | null; referred_by: string | null; archived_at: string | null;
+  created_by: string | null; created_at: string;
+}
+export interface MemberCard { member_id: string; organization_id: string; qr_token: string; link_token: string; issued_at: string; regenerated_at: string | null }
+export interface Plan { id: string; organization_id: string; name: string; duration_months: number; price_cents: number; is_active: boolean; created_at: string }
+export interface Subscription {
+  id: string; organization_id: string; member_id: string; plan_id: string; start_date: string; end_date: string;
+  state: SubState; frozen_from: string | null; amount_due_cents: number; discount_cents: number; created_at: string;
+}
+export interface Payment {
+  id: string; organization_id: string; subscription_id: string; member_id: string; amount_cents: number; method: PaymentMethod;
+  paid_at: string; reference: string | null; note: string | null; received_by: string | null; received_by_name: string | null;
+  voided_at: string | null; void_reason: string | null;
+}
+export interface Attendance {
+  id: string; organization_id: string; member_id: string; result: "accepted" | "refused"; reason: string | null;
+  method: "qr" | "manual"; created_at: string; scanned_by_name: string | null;
+}
+export interface LedgerRow { id: string; organization_id: string; member_id: string; kind: LoyaltyKind; points: number; note: string | null; created_at: string }
+export interface LoyaltySettings {
+  organization_id: string; enabled: boolean; points_per_visit: number; welcome_points: number; points_per_month: number;
+  renewal_bonus: number; referral_points: number; expiry_months: number;
+}
+
+interface Data {
+  seeded: string[]; members: Member[]; cards: MemberCard[]; plans: Plan[]; subscriptions: Subscription[];
+  payments: Payment[]; attendance: Attendance[]; ledger: LedgerRow[]; loyalty: LoyaltySettings[];
+}
+const KEY = "nabd-demo-db";
+const blank = (): Data => ({ seeded: [], members: [], cards: [], plans: [], subscriptions: [], payments: [], attendance: [], ledger: [], loyalty: [] });
+
+let cache: Data | null = null;
+let version = 0;
+const listeners = new Set<() => void>();
+function data(): Data {
+  if (!cache) {
+    try { cache = { ...blank(), ...JSON.parse(localStorage.getItem(KEY) ?? "{}") }; } catch { cache = blank(); }
+  }
+  return cache!;
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(cache));
+  version++;
+  listeners.forEach((l) => l());
+}
+export function useDb(): number {
+  return useSyncExternalStore((l) => { listeners.add(l); return () => listeners.delete(l); }, () => version, () => 0);
+}
+
+// ---------- Acteur courant (équivalent de la session côté base) ----------
+interface Actor { userId: string; name: string; role: StaffRole; orgId: string; antiPassbackMinutes: number }
+let actor: Actor | null = null;
+export function setActor(a: Actor | null) { actor = a; if (a) seed(a.orgId); }
+function me(): Actor { if (!actor) throw new Error("Vous devez être connecté"); return actor; }
+const isAdmin = () => me().role !== "receptionist";
+
+const uid = () => crypto.randomUUID();
+const token = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(36).padStart(2, "0")).join("").slice(0, 20);
+const nowIso = () => new Date().toISOString();
+const localDayOf = (iso: string) => todayLocal(new Date(iso));
+
+// ---------- Vues ----------
+export function subStatus(s: Subscription, today = todayLocal()): SubStatus {
+  if (s.state === "cancelled") return "cancelled";
+  if (s.state === "frozen") return "frozen";
+  if (today < s.start_date) return "upcoming";
+  if (today > s.end_date) return "expired";
+  return "active";
+}
+export interface SubscriptionOverview extends Subscription {
+  member_name: string; member_phone: string | null; member_whatsapp_opt_in: boolean; member_archived: boolean;
+  plan_name: string; plan_duration_months: number; paid_cents: number; balance_cents: number; status: SubStatus; days_left: number;
+}
+export function subscriptionOverview(orgId: string): SubscriptionOverview[] {
+  const d = data(); const today = todayLocal();
+  return d.subscriptions.filter((s) => s.organization_id === orgId).map((s) => {
+    const m = d.members.find((x) => x.id === s.member_id);
+    const p = d.plans.find((x) => x.id === s.plan_id);
+    const paid = d.payments.filter((x) => x.subscription_id === s.id && !x.voided_at).reduce((a, x) => a + x.amount_cents, 0);
+    return {
+      ...s, member_name: m?.full_name ?? "—", member_phone: m?.phone ?? null, member_whatsapp_opt_in: m?.whatsapp_opt_in ?? false,
+      member_archived: !!m?.archived_at, plan_name: p?.name ?? "—", plan_duration_months: p?.duration_months ?? 0,
+      paid_cents: paid, balance_cents: Math.max(0, s.amount_due_cents - paid), status: subStatus(s, today), days_left: diffDays(s.end_date, today),
+    };
+  });
+}
+export interface MemberOverview extends Member {
+  subscription_id: string | null; plan_name: string | null; start_date: string | null; end_date: string | null;
+  subscription_status: SubStatus | null; days_left: number | null; balance_cents: number; points: number; last_visit_at: string | null;
+}
+const STATUS_RANK: Record<SubStatus, number> = { active: 0, frozen: 1, upcoming: 2, expired: 3, cancelled: 4 };
+export function memberOverview(orgId: string): MemberOverview[] {
+  const d = data();
+  const subs = subscriptionOverview(orgId);
+  return d.members.filter((m) => m.organization_id === orgId).map((m) => {
+    const mine = subs.filter((s) => s.member_id === m.id)
+      .sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status] || b.start_date.localeCompare(a.start_date));
+    const cur = mine[0];
+    const lastVisit = d.attendance.filter((a) => a.member_id === m.id && a.result === "accepted").map((a) => a.created_at).sort().pop() ?? null;
+    return {
+      ...m, subscription_id: cur?.id ?? null, plan_name: cur?.plan_name ?? null, start_date: cur?.start_date ?? null,
+      end_date: cur?.end_date ?? null, subscription_status: cur?.status ?? null, days_left: cur?.days_left ?? null,
+      balance_cents: mine.filter((s) => s.status !== "cancelled").reduce((a, s) => a + s.balance_cents, 0),
+      points: memberPoints(m.id), last_visit_at: lastVisit,
+    };
+  });
+}
+export function memberPoints(memberId: string) {
+  return data().ledger.filter((l) => l.member_id === memberId).reduce((a, l) => a + l.points, 0);
+}
+export interface AttendanceOverview extends Attendance { member_name: string; created_local: string; created_on: string }
+export function attendanceOverview(orgId: string): AttendanceOverview[] {
+  const d = data();
+  return d.attendance.filter((a) => a.organization_id === orgId).map((a) => ({
+    ...a, member_name: d.members.find((m) => m.id === a.member_id)?.full_name ?? "—",
+    created_local: a.created_at, created_on: localDayOf(a.created_at),
+  })).sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+export function getCard(memberId: string) { return data().cards.find((c) => c.member_id === memberId) ?? null; }
+export function loyaltySettings(orgId: string) { return data().loyalty.find((l) => l.organization_id === orgId) ?? null; }
+
+// ---------- Fonctions (équivalents rpc) ----------
+export interface CheckInResult {
+  result: "accepted" | "refused"; reason: string | null; points_earned: number;
+  member: { id: string; full_name: string; phone: string | null; photo_path: string | null; plan_name: string | null;
+    end_date: string | null; status: SubStatus | null; days_left: number | null; balance_cents: number; points: number } | null;
+}
+
+function evaluate(memberId: string, method: "qr" | "manual", reason: string | null): CheckInResult {
+  const a = me(); const d = data();
+  const mo = memberOverview(a.orgId).find((m) => m.id === memberId)!;
+  let refused: string | null = null;
+  if (mo.archived_at) refused = "Membre archivé";
+  else if (!mo.subscription_status) refused = "Aucun abonnement";
+  else if (mo.subscription_status === "frozen") refused = "Abonnement gelé";
+  else if (mo.subscription_status === "cancelled") refused = "Abonnement annulé";
+  else if (mo.subscription_status === "upcoming") refused = `Abonnement pas encore commencé (début le ${mo.start_date!.split("-").reverse().join("/")})`;
+  else if (mo.subscription_status === "expired") refused = `Abonnement expiré le ${mo.end_date!.split("-").reverse().join("/")}`;
+  else if (method === "qr" && a.antiPassbackMinutes > 0) {
+    const last = d.attendance.filter((x) => x.member_id === memberId && x.result === "accepted").map((x) => x.created_at).sort().pop();
+    if (last) {
+      const mins = Math.floor((Date.now() - Date.parse(last)) / 60000);
+      if (mins < a.antiPassbackMinutes) refused = `Déjà entré il y a ${mins} min`;
+    }
+  }
+  const att: Attendance = {
+    id: uid(), organization_id: a.orgId, member_id: memberId, result: refused ? "refused" : "accepted",
+    reason: refused ?? reason, method, created_at: nowIso(), scanned_by_name: a.name,
+  };
+  d.attendance.push(att);
+  let earned = 0;
+  const ls = loyaltySettings(a.orgId);
+  if (!refused && ls?.enabled && ls.points_per_visit > 0) {
+    const today = todayLocal();
+    const already = d.ledger.some((l) => l.member_id === memberId && l.kind === "visit" && localDayOf(l.created_at) === today);
+    if (!already) {
+      earned = ls.points_per_visit;
+      d.ledger.push({ id: uid(), organization_id: a.orgId, member_id: memberId, kind: "visit", points: earned, note: null, created_at: nowIso() });
+    }
+  }
+  save();
+  return {
+    result: att.result, reason: att.reason, points_earned: earned,
+    member: {
+      id: mo.id, full_name: mo.full_name, phone: mo.phone, photo_path: mo.photo_path, plan_name: mo.plan_name,
+      end_date: mo.end_date, status: mo.subscription_status, days_left: mo.days_left, balance_cents: mo.balance_cents,
+      points: memberPoints(mo.id),
+    },
+  };
+}
+
+export async function rpcCheckIn(orgId: string, qrToken: string): Promise<CheckInResult> {
+  const code = qrToken.trim();
+  if (!code) throw new Error("Code vide");
+  const card = data().cards.find((c) => c.organization_id === orgId && c.qr_token === code);
+  if (!card) return { result: "refused", reason: "QR inconnu ou remplacé", points_earned: 0, member: null };
+  return evaluate(card.member_id, "qr", null);
+}
+export async function rpcManualCheckIn(memberId: string, reason: string): Promise<CheckInResult> {
+  if (reason.trim().length < 3) throw new Error("Le motif de l'entrée manuelle est obligatoire");
+  const m = data().members.find((x) => x.id === memberId && x.organization_id === me().orgId);
+  if (!m) throw new Error("Membre introuvable");
+  return evaluate(memberId, "manual", `Manuelle : ${reason.trim()}`);
+}
+
+// ---------- Données de démonstration ----------
+function seed(orgId: string) {
+  const d = data();
+  if (d.seeded.includes(orgId)) return;
+  const today = todayLocal();
+  const ago = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
+  d.loyalty.push({ organization_id: orgId, enabled: true, points_per_visit: 10, welcome_points: 50, points_per_month: 20, renewal_bonus: 30, referral_points: 100, expiry_months: 12 });
+  const plans: Plan[] = [
+    { name: "Mensuel", duration_months: 1, price_cents: 30000 },
+    { name: "Trimestriel", duration_months: 3, price_cents: 80000 },
+    { name: "Annuel", duration_months: 12, price_cents: 280000 },
+  ].map((p) => ({ ...p, id: uid(), organization_id: orgId, is_active: true, created_at: nowIso() }));
+  d.plans.push(...plans);
+  const people: { name: string; phone: string; plan: number; startOffset: number; paid: number; state?: SubState }[] = [
+    { name: "Youssef El Amrani", phone: "06 12 34 56 78", plan: 0, startOffset: -10, paid: 30000 },
+    { name: "Salma Bennani", phone: "06 61 22 33 44", plan: 1, startOffset: -40, paid: 50000 },
+    { name: "Hamza Tazi", phone: "07 70 11 22 33", plan: 0, startOffset: -26, paid: 30000 },
+    { name: "Imane Chraibi", phone: "06 55 44 33 22", plan: 0, startOffset: -45, paid: 30000 },
+    { name: "Omar Fassi", phone: "06 98 76 54 32", plan: 2, startOffset: -100, paid: 280000, state: "frozen" },
+    { name: "Nadia Alaoui", phone: "06 11 99 88 77", plan: 0, startOffset: 3, paid: 0 },
+  ];
+  people.forEach((p, i) => {
+    const m: Member = {
+      id: uid(), organization_id: orgId, full_name: p.name, phone: p.phone, email: null, notes: null, whatsapp_opt_in: true,
+      photo_path: null, referred_by: null, archived_at: null, created_by: null, created_at: ago(120 - i),
+    };
+    d.members.push(m);
+    d.cards.push({ member_id: m.id, organization_id: orgId, qr_token: `DEMO-${i + 1}-${token()}`, link_token: token() + token(), issued_at: m.created_at, regenerated_at: null });
+    const plan = plans[p.plan]!;
+    const start = addDays(today, p.startOffset);
+    const s: Subscription = {
+      id: uid(), organization_id: orgId, member_id: m.id, plan_id: plan.id, start_date: start,
+      end_date: addDays(addMonths(start, plan.duration_months), -1), state: p.state ?? "active",
+      frozen_from: p.state === "frozen" ? addDays(today, -5) : null, amount_due_cents: plan.price_cents, discount_cents: 0, created_at: m.created_at,
+    };
+    d.subscriptions.push(s);
+    if (p.paid) d.payments.push({
+      id: uid(), organization_id: orgId, subscription_id: s.id, member_id: m.id, amount_cents: p.paid, method: "cash",
+      paid_at: m.created_at, reference: null, note: null, received_by: null, received_by_name: "Démo", voided_at: null, void_reason: null,
+    });
+    d.ledger.push({ id: uid(), organization_id: orgId, member_id: m.id, kind: "welcome", points: 50, note: null, created_at: m.created_at });
+    if (i < 3) d.attendance.push({ id: uid(), organization_id: orgId, member_id: m.id, result: "accepted", reason: null, method: "qr", created_at: ago(1 + i), scanned_by_name: "Démo" });
+  });
+  d.seeded.push(orgId);
+  save();
+}
+
+/** Liste des codes QR de démonstration (aide au test sans lecteur). */
+export function demoCodes(orgId: string) {
+  const d = data();
+  return d.cards.filter((c) => c.organization_id === orgId).map((c) => ({
+    code: c.qr_token, name: d.members.find((m) => m.id === c.member_id)?.full_name ?? "—",
+  }));
+}
